@@ -80,3 +80,6 @@ Vista 3 (detalle de una habitación)
 * Sección de "inspiración" - Título, pestañas con descripciones de lugares genéricos (popular, arte y cultura, playa, montañas, al aire libre, actividades) y grilla de links con destino en negrita y descripción general (casas vacacionales, apartamentos vacacionales, renta mensual de alojamiento, villa vacacional, entre otros).
 * Tres columnas de enlaces a sitios de interés (Asistencia, Modo anfitrión, Airbnb) con número variable de enlaces (6 a 10 dependiendo de la columna).
 * Footer con licencia ((C)2026 Airbnb, Inc.), enlaces a "Privacidad" y "Términos" sobre el lado izquierdo. Botón de cambio de idioma, tipo de moneda y enlaces a redes sociales en íconos (Meta, X, Instagram).
+
+
+El usuario en todos los casos será alguien interesado en consultar posibles opciones de alojamiento en la página web. En la vista 1 debe poder ver diferentes opciones e iniciar la búsqueda que desee. En la vista 2 podrá consultar las opciones que resulten de su búsqueda. En la vista 3 deberá poder consultar los detalles de un alojamiento particular. 
