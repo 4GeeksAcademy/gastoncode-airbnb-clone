@@ -1,65 +1,230 @@
-import Image from "next/image";
+import { BottomNav } from "@/components/home/BottomNav";
+import { CategoryScroller } from "@/components/home/CategoryScroller";
+import { InspirationSection } from "@/components/home/InspirationSection";
+import { ListingSection } from "@/components/home/ListingSection";
+import { MobileFrame } from "@/components/home/MobileFrame";
+import { SiteFooter } from "@/components/home/SiteFooter";
+import { TopSearchBar } from "@/components/home/TopSearchBar";
+import type {
+  CategoryItem,
+  FooterLinkGroup,
+  ListingSectionData,
+} from "@/types/home";
+
+const categoryItems: CategoryItem[] = [
+  { id: "all", icon: "✧", label: "Todo" },
+  { id: "homes", icon: "⌂", label: "Alojamientos" },
+  { id: "experiences", icon: "◌", label: "Experiencias" },
+];
+
+const listingSections: ListingSectionData[] = [
+  {
+    id: "buenos-aires",
+    title: "Alojamientos populares en Buenos Aires",
+    listings: [
+      {
+        id: "ba-1",
+        title: "Apartamento en Buenos Aires",
+        location: "Buenos Aires",
+        priceLabel: "$U 85.311",
+        nightsLabel: "2 noches",
+        badge: "Favorito entre huespedes",
+        rating: "5.0",
+        imageTone: "city",
+      },
+      {
+        id: "ba-2",
+        title: "Casa de huespedes en Buenos Aires",
+        location: "Buenos Aires",
+        priceLabel: "$U 142.871",
+        nightsLabel: "2 noches",
+        badge: "Favorito entre huespedes",
+        rating: "4.78",
+        imageTone: "sand",
+      },
+    ],
+  },
+  {
+    id: "punta-del-este",
+    title: "Quedate en Punta del Este",
+    listings: [
+      {
+        id: "pde-1",
+        title: "Loft en Punta del Este",
+        location: "Punta del Este",
+        priceLabel: "$U 449.111",
+        nightsLabel: "2 noches",
+        badge: "Favorito entre huespedes",
+        rating: "4.91",
+        imageTone: "sky",
+      },
+      {
+        id: "pde-2",
+        title: "Apartamento en Punta del Este",
+        location: "Punta del Este",
+        priceLabel: "$U 190.747",
+        nightsLabel: "2 noches",
+        badge: "Favorito entre huespedes",
+        rating: "4.87",
+        imageTone: "city",
+      },
+    ],
+  },
+  {
+    id: "colonia",
+    title: "Disponibles cerca de Colonia del Sacramento",
+    listings: [
+      {
+        id: "cs-1",
+        title: "Alojamiento en Colonia",
+        location: "Colonia",
+        priceLabel: "$U 362.717",
+        nightsLabel: "2 noches",
+        badge: "Favorito entre huespedes",
+        rating: "4.78",
+        imageTone: "forest",
+      },
+      {
+        id: "cs-2",
+        title: "Apartamento en Colonia",
+        location: "Colonia del Sacramento",
+        priceLabel: "$U 342.017",
+        nightsLabel: "2 noches",
+        badge: "Favorito entre huespedes",
+        rating: "4.89",
+        imageTone: "rose",
+      },
+    ],
+  },
+  {
+    id: "bariloche",
+    title: "Alojamientos en San Carlos de Bariloche",
+    listings: [
+      {
+        id: "bari-1",
+        title: "Apartamento en San Carlos de Bariloche",
+        location: "Bariloche",
+        priceLabel: "$U 215.003",
+        nightsLabel: "2 noches",
+        badge: "Favorito entre huespedes",
+        rating: "4.58",
+        imageTone: "mint",
+      },
+      {
+        id: "bari-2",
+        title: "Alojamiento en San Carlos de Bariloche",
+        location: "Bariloche",
+        priceLabel: "$U 384.449",
+        nightsLabel: "2 noches",
+        badge: "Favorito entre huespedes",
+        rating: "4.92",
+        imageTone: "sky",
+      },
+    ],
+  },
+  {
+    id: "lavalleja",
+    title: "Disponibles cerca de Lavalleja el proximo fin de semana",
+    listings: [
+      {
+        id: "lava-1",
+        title: "Minicasa en Minas",
+        location: "Minas",
+        priceLabel: "$U 675.117",
+        nightsLabel: "2 noches",
+        badge: "Favorito entre huespedes",
+        rating: "4.98",
+        imageTone: "forest",
+      },
+      {
+        id: "lava-2",
+        title: "Alojamiento en Villa Serrana",
+        location: "Villa Serrana",
+        priceLabel: "$U 124.799",
+        nightsLabel: "2 noches",
+        badge: "Favorito entre huespedes",
+        rating: "4.90",
+        imageTone: "mint",
+      },
+    ],
+  },
+];
+
+const footerGroups: FooterLinkGroup[] = [
+  {
+    id: "asistencia",
+    title: "Asistencia",
+    links: [
+      "Centro de ayuda",
+      "Recibe ayuda con un problema de seguridad",
+      "AirCover",
+      "Antidiscriminacion",
+    ],
+  },
+  {
+    id: "anfitrion",
+    title: "Modo anfitrion",
+    links: [
+      "Pon tu espacio en Airbnb",
+      "AirCover para anfitriones",
+      "Recursos para anfitriones",
+      "Foro comunitario",
+    ],
+  },
+  {
+    id: "airbnb",
+    title: "Airbnb",
+    links: [
+      "Novedades de mayo de 2026",
+      "Sala de prensa",
+      "Empleo",
+      "Inversores",
+    ],
+  },
+];
+
+const inspirationTabs = [
+  "Popular",
+  "Arte y cultura",
+  "Playa",
+  "Montana",
+  "Ciudad",
+];
+
+const inspirationLinks = [
+  "West Palm Beach",
+  "Gulf Shores",
+  "Niagara Falls",
+  "Nashville",
+  "Miami",
+  "Bentonville",
+  "Memphis",
+  "Mostrar mas",
+];
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+    <div className="bg-zinc-100 py-4 sm:py-8">
+      <MobileFrame>
+        <TopSearchBar placeholder="Empieza la busqueda" />
+        <CategoryScroller items={categoryItems} />
+
+        <main className="pb-4">
+          {listingSections.map((section) => (
+            <ListingSection key={section.id} section={section} />
+          ))}
+
+          <InspirationSection
+            tabs={inspirationTabs}
+            activeTab="Popular"
+            links={inspirationLinks}
+          />
+
+          <SiteFooter groups={footerGroups} />
+        </main>
+      </MobileFrame>
+
+      <BottomNav />
     </div>
   );
 }
