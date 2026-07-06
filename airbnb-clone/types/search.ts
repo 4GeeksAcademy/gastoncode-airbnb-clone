@@ -12,6 +12,7 @@ export type StayResult = {
   rating: string;
   imageTone: "city" | "forest" | "sand" | "mint";
   badge?: string;
+  detailHref?: string;
 };
 
 export type SearchPagination = {
