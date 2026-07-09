@@ -7,6 +7,7 @@ export type SearchState = {
 };
 
 export const SEARCH_STATE_STORAGE_KEY = "airbnb-clone-search-state";
+const SEARCH_STATE_CHANGE_EVENT = "airbnb-clone-search-state-change";
 
 export const defaultSearchState: SearchState = {
   destination: "Cerca de Buenos Aires",
@@ -17,6 +18,8 @@ export const defaultSearchState: SearchState = {
 };
 
 const MONTH_LABELS_SHORT = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
+let cachedSearchStateRaw: string | null | undefined;
+let cachedSearchStateSnapshot: SearchState = defaultSearchState;
 
 function parseIsoDateParts(value: string): { year: number; month: number; day: number } | null {
   const match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
@@ -118,10 +121,70 @@ export function readSearchStateFromStorage(): SearchState | null {
   }
 }
 
+export function subscribeToSearchState(onStoreChange: () => void): () => void {
+  if (typeof window === "undefined") {
+    return () => {};
+  }
+
+  const handleStorageChange = (event: StorageEvent) => {
+    if (event.key && event.key !== SEARCH_STATE_STORAGE_KEY) {
+      return;
+    }
+
+    cachedSearchStateRaw = undefined;
+    onStoreChange();
+  };
+
+  const handleCustomChange = () => {
+    cachedSearchStateRaw = undefined;
+    onStoreChange();
+  };
+
+  window.addEventListener("storage", handleStorageChange);
+  window.addEventListener(SEARCH_STATE_CHANGE_EVENT, handleCustomChange);
+
+  return () => {
+    window.removeEventListener("storage", handleStorageChange);
+    window.removeEventListener(SEARCH_STATE_CHANGE_EVENT, handleCustomChange);
+  };
+}
+
+export function getSearchStateSnapshot(): SearchState {
+  if (typeof window === "undefined") {
+    return defaultSearchState;
+  }
+
+  const rawState = window.localStorage.getItem(SEARCH_STATE_STORAGE_KEY);
+
+  if (rawState === cachedSearchStateRaw) {
+    return cachedSearchStateSnapshot;
+  }
+
+  cachedSearchStateRaw = rawState;
+
+  if (!rawState) {
+    cachedSearchStateSnapshot = defaultSearchState;
+    return cachedSearchStateSnapshot;
+  }
+
+  try {
+    cachedSearchStateSnapshot = sanitizeSearchState(JSON.parse(rawState) as Partial<SearchState>);
+  } catch {
+    cachedSearchStateSnapshot = defaultSearchState;
+  }
+
+  return cachedSearchStateSnapshot;
+}
+
 export function saveSearchStateToStorage(searchState: SearchState): void {
   if (typeof window === "undefined") {
     return;
   }
 
-  window.localStorage.setItem(SEARCH_STATE_STORAGE_KEY, JSON.stringify(searchState));
+  const nextRawState = JSON.stringify(searchState);
+
+  window.localStorage.setItem(SEARCH_STATE_STORAGE_KEY, nextRawState);
+  cachedSearchStateRaw = nextRawState;
+  cachedSearchStateSnapshot = searchState;
+  window.dispatchEvent(new Event(SEARCH_STATE_CHANGE_EVENT));
 }

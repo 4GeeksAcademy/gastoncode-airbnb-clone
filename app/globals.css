@@ -290,6 +290,10 @@ body {
   margin-top: 22px;
 }
 
+.stay-grid-section {
+  margin-top: 22px;
+}
+
 .section-header {
   display: flex;
   align-items: center;
@@ -329,9 +333,15 @@ body {
   scroll-snap-type: x mandatory;
 }
 
+.stays-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px 12px;
+}
+
 .stay-card {
-  min-width: 165px;
-  width: 165px;
+  min-width: 0;
+  width: 100%;
   scroll-snap-align: start;
 }
 
@@ -342,6 +352,20 @@ body {
   overflow: hidden;
   margin-bottom: 7px;
   box-shadow: var(--shadow-soft);
+  background: linear-gradient(135deg, #dad6d0, #f4efe9 55%, #d7e0e8);
+}
+
+.stay-image-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 0.84rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .stay-image img {
@@ -356,19 +380,6 @@ body {
   position: absolute;
   inset: 0;
   background: linear-gradient(to top, rgba(0, 0, 0, 0.2), transparent 38%);
-}
-
-.badge {
-  position: absolute;
-  top: 8px;
-  left: 8px;
-  z-index: 2;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.94);
-  color: #2b2b2b;
-  font-size: 0.58rem;
-  font-weight: 600;
-  padding: 4px 8px;
 }
 
 .heart-btn {
@@ -392,6 +403,11 @@ body {
   fill: #ffffff;
 }
 
+.stay-body {
+  display: grid;
+  gap: 4px;
+}
+
 .stay-body h3 {
   font-size: 0.74rem;
   line-height: 1.3;
@@ -402,18 +418,31 @@ body {
   font-size: 0.67rem;
   line-height: 1.2;
   color: var(--text-muted);
-  margin-top: 2px;
+  margin: 0;
+}
+
+.stay-price {
+  color: #1f1f1f;
+  font-weight: 700;
 }
 
 .stay-meta {
   display: flex;
-  gap: 6px;
   align-items: center;
 }
 
 .stay-rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   color: #343434;
   font-weight: 600;
+}
+
+.stay-rating svg {
+  width: 12px;
+  height: 12px;
+  fill: var(--airbnb-red);
 }
 
 .inspiration {
@@ -719,10 +748,20 @@ body {
   gap: 4px;
 }
 
+.results-chip.is-active {
+  border-color: #111111;
+  background: #111111;
+  color: #ffffff;
+}
+
 .results-chip svg {
   width: 15px;
   height: 15px;
   fill: #666666;
+}
+
+.results-chip.is-active svg {
+  fill: #ffffff;
 }
 
 .results-map-panel {
@@ -1738,13 +1777,16 @@ body {
     margin-top: 28px;
   }
 
+  .stay-grid-section {
+    margin-top: 28px;
+  }
+
   .section-header h2 {
     font-size: 1.8rem;
   }
 
-  .stay-card {
-    width: 280px;
-    min-width: 280px;
+  .stays-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .stay-body h3 {

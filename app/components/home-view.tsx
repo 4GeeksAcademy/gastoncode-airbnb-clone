@@ -3,8 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { HeartIcon, MapPinIcon, SearchIcon } from "./icons";
+import { useEffect, useState, useSyncExternalStore } from "react";
+import { ChevronDownIcon, HeartIcon, MapPinIcon, SearchIcon, StarIcon } from "./icons";
 import {
   categoryFilters,
   footerColumns,
@@ -12,16 +12,71 @@ import {
   staySections,
   type Stay,
 } from "../data/home-data";
+import { filterChips } from "../data/results-data";
 import {
   createSearchQuery,
   defaultSearchState,
   formatCompactSearchDate,
-  readSearchStateFromStorage,
+  getSearchStateSnapshot,
   sanitizeSearchState,
   saveSearchStateToStorage,
+  subscribeToSearchState,
   type SearchState,
 } from "../data/search-state";
 import type { SearchBarProps } from "../types/ui";
+
+const HOME_PLACE_TYPE_PATTERN = /apartamento|casa|loft|cabana|minicasa|alojamiento|huespedes/;
+const HOME_ROOM_PATTERN = /casa|cabana|alojamiento/;
+const HOME_STAY_PATTERN = /noche|noches/;
+
+function extractPriceValue(price: string) {
+  const numericValue = Number(price.replace(/[^\d]/g, ""));
+  return Number.isFinite(numericValue) && numericValue > 0 ? numericValue : Number.POSITIVE_INFINITY;
+}
+
+function matchesHomeFilter(stay: Stay, filter: string) {
+  const searchableText = `${stay.title} ${stay.details}`.toLowerCase();
+
+  if (filter === "Precio") {
+    return extractPriceValue(stay.price) <= 5000;
+  }
+
+  if (filter === "Tipo de lugar") {
+    return HOME_PLACE_TYPE_PATTERN.test(searchableText);
+  }
+
+  if (filter === "Calificacion") {
+    return Number(stay.rating) >= 4.9;
+  }
+
+  if (filter === "Habitaciones") {
+    return HOME_ROOM_PATTERN.test(searchableText);
+  }
+
+  return true;
+}
+
+function isNightlyStay(stay: Stay) {
+  return HOME_STAY_PATTERN.test(stay.details.toLowerCase());
+}
+
+function formatNightlyPrice(stay: Stay) {
+  return `${stay.price} / noche`;
+}
+
+function getVisibleStays(stays: Stay[], query: string, activeFilters: string[]) {
+  const normalizedQuery = query.trim().toLowerCase();
+
+  return stays
+    .filter((stay) => isNightlyStay(stay))
+    .filter((stay) => {
+      const searchableText = `${stay.title} ${stay.details} ${stay.price}`.toLowerCase();
+      const matchesQuery = !normalizedQuery || searchableText.includes(normalizedQuery);
+      const matchesFilters = activeFilters.every((filter) => matchesHomeFilter(stay, filter));
+
+      return matchesQuery && matchesFilters;
+    });
+}
 
 function SearchBar({ searchState, onFieldChange, onSearch }: SearchBarProps) {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -146,14 +201,28 @@ function SearchBar({ searchState, onFieldChange, onSearch }: SearchBarProps) {
   );
 }
 
-function SectionHeader({ title }: { title: string }) {
+function HomeResultsFilters({
+  activeFilters,
+  onToggleFilter,
+}: {
+  activeFilters: string[];
+  onToggleFilter: (filter: string) => void;
+}) {
   return (
-    <header className="section-header">
-      <h2>{title}</h2>
-      <button type="button" aria-label={`Ver mas de ${title}`}>
-        <ChevronRightIcon />
-      </button>
-    </header>
+    <section className="results-filters" aria-label="Filtros de alojamientos">
+      {filterChips.map((chip) => (
+        <button
+          key={chip}
+          type="button"
+          className={`results-chip ${activeFilters.includes(chip) ? "is-active" : ""}`}
+          onClick={() => onToggleFilter(chip)}
+          aria-pressed={activeFilters.includes(chip)}
+        >
+          <span>{chip}</span>
+          <ChevronDownIcon />
+        </button>
+      ))}
+    </section>
   );
 }
 
@@ -162,18 +231,20 @@ function StayCard({ stay }: { stay: Stay }) {
     <Link href="/location" className="stay-card-link" aria-label={`Ver detalle de ${stay.title}`}>
       <article className="stay-card">
         <div className={`stay-image tone-${stay.accent}`}>
-          <Image src={stay.image} alt={stay.title} fill sizes="(min-width: 768px) 280px, 165px" />
-          {stay.badge ? <span className="badge">{stay.badge}</span> : null}
+          <div className="stay-image-placeholder" aria-hidden="true">Foto</div>
+          <Image src={stay.image} alt={stay.title} fill sizes="(min-width: 1080px) 25vw, (min-width: 768px) 33vw, 50vw" />
           <button className="heart-btn" type="button" aria-label="Guardar">
             <HeartIcon />
           </button>
         </div>
         <div className="stay-body">
           <h3>{stay.title}</h3>
-          <p>{stay.details}</p>
+          <p className="stay-price">{formatNightlyPrice(stay)}</p>
           <p className="stay-meta">
-            <span>{stay.price}</span>
-            <span className="stay-rating">★ {stay.rating}</span>
+            <span className="stay-rating">
+              <StarIcon />
+              <span>{stay.rating}</span>
+            </span>
           </p>
         </div>
       </article>
@@ -181,13 +252,15 @@ function StayCard({ stay }: { stay: Stay }) {
   );
 }
 
-function StaySection({ title, cards }: { title: string; cards: Stay[] }) {
+function StaysGrid({ stays }: { stays: Stay[] }) {
   return (
-    <section className="stay-section" aria-label={title}>
-      <SectionHeader title={title} />
-      <div className="stays-scroll">
-        {cards.map((stay) => (
-          <StayCard key={`${title}-${stay.title}`} stay={stay} />
+    <section className="stay-grid-section" aria-label="Alojamientos disponibles">
+      <header className="section-header">
+        <h2>Alojamientos disponibles</h2>
+      </header>
+      <div className="stays-grid">
+        {stays.map((stay) => (
+          <StayCard key={`${stay.title}-${stay.image}`} stay={stay} />
         ))}
       </div>
     </section>
@@ -246,36 +319,37 @@ function FooterColumns() {
 }
 
 export function HomeView() {
-  const [searchState, setSearchState] = useState<SearchState>(() => readSearchStateFromStorage() || defaultSearchState);
-  const [visibleSections, setVisibleSections] = useState(staySections);
+  const initialSearchState = useSyncExternalStore(
+    subscribeToSearchState,
+    getSearchStateSnapshot,
+    () => defaultSearchState,
+  );
+
+  return <HomeViewContent key={createSearchQuery(initialSearchState)} initialSearchState={initialSearchState} />;
+}
+
+function HomeViewContent({ initialSearchState }: { initialSearchState: SearchState }) {
+  const [searchState, setSearchState] = useState<SearchState>(initialSearchState);
+  const [activeFilters, setActiveFilters] = useState<string[]>([]);
+  const [stays, setStays] = useState<Stay[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+  const visibleStays = getVisibleStays(stays, searchState.destination, activeFilters);
 
-  const updateVisibleSections = (query: string) => {
-    const normalizedQuery = query.trim().toLowerCase();
+  useEffect(() => {
+    setIsLoading(true);
 
-    if (!normalizedQuery) {
-      setVisibleSections(staySections);
-      return;
-    }
+    const timeoutId = window.setTimeout(() => {
+      setStays(staySections.flatMap((section) => section.cards));
+      setIsLoading(false);
+    }, 1000);
 
-    const filteredSections = staySections
-      .map((section) => ({
-        ...section,
-        cards: section.cards.filter((stay) => {
-          const searchableText = `${stay.title} ${stay.details} ${stay.price}`.toLowerCase();
-          return searchableText.includes(normalizedQuery);
-        }),
-      }))
-      .filter((section) => section.cards.length > 0);
-
-    setVisibleSections(filteredSections);
-  };
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, []);
 
   const handleSearchFieldChange = (field: keyof SearchState, value: string) => {
-    if (field === "destination") {
-      updateVisibleSections(value);
-    }
-
     setSearchState((currentState) => {
       if (field === "adults" || field === "children") {
         const parsedValue = Number(value);
@@ -294,6 +368,14 @@ export function HomeView() {
     });
   };
 
+  const handleToggleFilter = (filter: string) => {
+    setActiveFilters((currentFilters) => (
+      currentFilters.includes(filter)
+        ? currentFilters.filter((currentFilter) => currentFilter !== filter)
+        : [...currentFilters, filter]
+    ));
+  };
+
   const handleSearch = () => {
     const nextSearchState = sanitizeSearchState(searchState);
     saveSearchStateToStorage(nextSearchState);
@@ -304,22 +386,17 @@ export function HomeView() {
     <div className="airbnb-clone">
       <main>
         <SearchBar searchState={searchState} onFieldChange={handleSearchFieldChange} onSearch={handleSearch} />
-        {visibleSections.map((section) => (
-          <StaySection key={section.title} title={section.title} cards={section.cards} />
-        ))}
+        <HomeResultsFilters activeFilters={activeFilters} onToggleFilter={handleToggleFilter} />
+        {isLoading ? (
+          <p className="results-summary" role="status" aria-live="polite">Cargando alojamientos...</p>
+        ) : visibleStays.length > 0 ? <StaysGrid stays={visibleStays} /> : (
+          <p className="results-summary">No hay alojamientos que coincidan con los filtros seleccionados.</p>
+        )}
         <div className="section-break" aria-hidden="true" />
         <InspirationSection />
         <FooterColumns />
       </main>
     </div>
-  );
-}
-
-function ChevronRightIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="m9 6 6 6-6 6-1.4-1.4 4.6-4.6-4.6-4.6z" />
-    </svg>
   );
 }
 

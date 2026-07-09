@@ -3,16 +3,17 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { filterChips, resultStays, resultsHeader, type ResultStay } from "../data/results-data";
 import { ChevronDownIcon, HeartIcon, HomeIcon, MapPinIcon, SearchIcon, StarIcon } from "./icons";
 import {
   createSearchQuery,
   defaultSearchState,
   formatCompactSearchDate,
+  getSearchStateSnapshot,
   parseSearchStateFromQuery,
-  readSearchStateFromStorage,
   saveSearchStateToStorage,
+  subscribeToSearchState,
   sanitizeSearchState,
   type SearchState,
 } from "../data/search-state";
@@ -295,8 +296,12 @@ function SimilarDatesSection({ stays, searchQuery }: { stays: ResultStay[]; sear
 export function ResultsView() {
   const searchParams = useSearchParams();
   const searchState = parseSearchStateFromQuery(searchParams);
-  const fallbackState = readSearchStateFromStorage() || defaultSearchState;
-  const currentSearch = searchParams.size > 0 ? searchState : fallbackState;
+  const storedSearchState = useSyncExternalStore(
+    subscribeToSearchState,
+    getSearchStateSnapshot,
+    () => defaultSearchState,
+  );
+  const currentSearch = searchParams.size > 0 ? searchState : storedSearchState;
   const currentSearchQuery = createSearchQuery(currentSearch);
 
   useEffect(() => {
@@ -310,6 +315,21 @@ function ResultsViewContent({ currentSearch }: { currentSearch: SearchState }) {
   const router = useRouter();
   const [activeCategory, setActiveCategory] = useState<ResultsCategoryId>("playa");
   const [editableSearch, setEditableSearch] = useState(currentSearch);
+  const [stays, setStays] = useState<ResultStay[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    setIsLoading(true);
+
+    const timeoutId = window.setTimeout(() => {
+      setStays(resultStays);
+      setIsLoading(false);
+    }, 1000);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, []);
 
   const handleSearchFieldChange = (field: keyof SearchState, value: string) => {
     setEditableSearch((currentState) => {
@@ -338,7 +358,7 @@ function ResultsViewContent({ currentSearch }: { currentSearch: SearchState }) {
 
   const searchQuery = createSearchQuery(currentSearch);
 
-  const filteredResults = resultStays.filter((stay) => stayMatchesCategory(stay, activeCategory));
+  const filteredResults = stays.filter((stay) => stayMatchesCategory(stay, activeCategory));
   const mainResults = filteredResults.slice(0, 8);
   const similarResults = filteredResults.slice(8, 12);
 
@@ -351,10 +371,16 @@ function ResultsViewContent({ currentSearch }: { currentSearch: SearchState }) {
         <ResultsSegment />
         <ResultsFilters />
         <ResultsMapPanel />
-        <p className="results-summary">{filteredResults.length} alojamientos en esta categoria</p>
+        {isLoading ? (
+          <p className="results-summary" role="status" aria-live="polite">Cargando alojamientos...</p>
+        ) : (
+          <p className="results-summary">{filteredResults.length} alojamientos en esta categoria</p>
+        )}
         <div className="results-main-layout">
           <section className="results-list" aria-label="Resultados de alojamientos">
-            {mainResults.length > 0 ? mainResults.map((stay, index) => (
+            {isLoading ? (
+              <p className="results-summary" role="status" aria-live="polite">Cargando datos...</p>
+            ) : mainResults.length > 0 ? mainResults.map((stay, index) => (
               <div key={stay.id} className="results-list-slot">
                 {index === 3 && similarResults.length > 0 ? <SimilarDatesSection stays={similarResults} searchQuery={searchQuery} /> : null}
                 <ResultCard stay={stay} dimmed={index > 4} searchQuery={searchQuery} />
