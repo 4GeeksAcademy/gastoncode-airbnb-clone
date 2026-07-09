@@ -53,3 +53,11 @@ export function StarIcon() {
     </svg>
   );
 }
+
+export function HomeIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 4.2 3.8 10.7l1.4 1.7 1.8-1.5V19h5v-4h2v4h5v-8.1l1.8 1.5 1.4-1.7z" />
+    </svg>
+  );
+}

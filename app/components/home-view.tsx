@@ -1,9 +1,10 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { HeartIcon, MapPinIcon, SearchIcon } from "./icons";
-import { MobileNav } from "./mobile-nav";
 import {
   categoryFilters,
   footerColumns,
@@ -11,14 +12,120 @@ import {
   staySections,
   type Stay,
 } from "../data/home-data";
+import {
+  createSearchQuery,
+  defaultSearchState,
+  formatCompactSearchDate,
+  readSearchStateFromStorage,
+  sanitizeSearchState,
+  saveSearchStateToStorage,
+  type SearchState,
+} from "../data/search-state";
+import type { SearchBarProps } from "../types/ui";
 
-function SearchBar() {
+function SearchBar({ searchState, onFieldChange, onSearch }: SearchBarProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  const dateSummary = `${formatCompactSearchDate(searchState.checkIn)} - ${formatCompactSearchDate(searchState.checkOut)}`;
+  const guestSummary = `${searchState.adults} adultos · ${searchState.children} ninos`;
+
+  const updateGuestCount = (field: "adults" | "children", delta: number) => {
+    const currentValue = Number(searchState[field]);
+    const minValue = field === "adults" ? 1 : 0;
+    const nextValue = Math.max(minValue, currentValue + delta);
+    onFieldChange(field, String(nextValue));
+  };
+
+  const handleSearchClick = () => {
+    onSearch();
+    setIsExpanded(false);
+  };
+
   return (
     <section className="search-shell" aria-label="Buscador principal">
-      <button className="search-chip" type="button">
-        <SearchIcon />
-        <span>Empieza la busqueda</span>
-      </button>
+      <div className="search-form" role="search" aria-label="Busqueda de alojamientos">
+        <button
+          className={`search-chip search-chip-toggle ${isExpanded ? "is-expanded" : ""}`}
+          type="button"
+          onClick={() => setIsExpanded((current) => !current)}
+          aria-expanded={isExpanded}
+        >
+          <SearchIcon />
+          <span className="search-chip-copy">
+            <strong>{searchState.destination}</strong>
+            <small>{dateSummary} · {guestSummary}</small>
+          </span>
+          <span className="search-chip-caret" aria-hidden="true">{isExpanded ? "▴" : "▾"}</span>
+        </button>
+
+        {isExpanded ? (
+          <div className="search-panel">
+            <label className="search-field">
+              <span>Destino</span>
+              <input
+                type="text"
+                value={searchState.destination}
+                onChange={(event) => onFieldChange("destination", event.target.value)}
+                placeholder="Ingresa un destino"
+              />
+            </label>
+
+            <div className="search-dates-row">
+              <label className="search-field">
+                <span>Llegada</span>
+                <input
+                  type="date"
+                  value={searchState.checkIn}
+                  onChange={(event) => onFieldChange("checkIn", event.target.value)}
+                />
+              </label>
+              <label className="search-field">
+                <span>Salida</span>
+                <input
+                  type="date"
+                  value={searchState.checkOut}
+                  onChange={(event) => onFieldChange("checkOut", event.target.value)}
+                />
+              </label>
+            </div>
+
+            <div className="search-guests-row" aria-label="Cantidad de personas">
+              <div className="guest-stepper">
+                <div>
+                  <strong>Adultos</strong>
+                  <small>Mayores de 13 anos</small>
+                </div>
+                <div className="guest-stepper-actions">
+                  <button type="button" onClick={() => updateGuestCount("adults", -1)} aria-label="Restar adulto">-</button>
+                  <span>{searchState.adults}</span>
+                  <button type="button" onClick={() => updateGuestCount("adults", 1)} aria-label="Sumar adulto">+</button>
+                </div>
+              </div>
+
+              <div className="guest-stepper">
+                <div>
+                  <strong>Ninos</strong>
+                  <small>De 0 a 12 anos</small>
+                </div>
+                <div className="guest-stepper-actions">
+                  <button type="button" onClick={() => updateGuestCount("children", -1)} aria-label="Restar nino">-</button>
+                  <span>{searchState.children}</span>
+                  <button type="button" onClick={() => updateGuestCount("children", 1)} aria-label="Sumar nino">+</button>
+                </div>
+              </div>
+            </div>
+
+            <div className="search-panel-actions">
+              <button type="button" className="search-clear-btn" onClick={() => setIsExpanded(false)}>
+                Cerrar
+              </button>
+              <button type="button" className="search-submit-btn" onClick={handleSearchClick}>
+                Buscar
+              </button>
+            </div>
+          </div>
+        ) : null}
+      </div>
       <div className="category-row" aria-label="Filtros por categoria">
         {categoryFilters.map((filter, index) => (
           <button
@@ -52,23 +159,25 @@ function SectionHeader({ title }: { title: string }) {
 
 function StayCard({ stay }: { stay: Stay }) {
   return (
-    <article className="stay-card">
-      <div className={`stay-image tone-${stay.accent}`}>
-        <Image src={stay.image} alt={stay.title} fill sizes="(min-width: 768px) 280px, 165px" />
-        {stay.badge ? <span className="badge">{stay.badge}</span> : null}
-        <button className="heart-btn" type="button" aria-label="Guardar">
-          <HeartIcon />
-        </button>
-      </div>
-      <div className="stay-body">
-        <h3>{stay.title}</h3>
-        <p>{stay.details}</p>
-        <p className="stay-meta">
-          <span>{stay.price}</span>
-          <span className="stay-rating">★ {stay.rating}</span>
-        </p>
-      </div>
-    </article>
+    <Link href="/location" className="stay-card-link" aria-label={`Ver detalle de ${stay.title}`}>
+      <article className="stay-card">
+        <div className={`stay-image tone-${stay.accent}`}>
+          <Image src={stay.image} alt={stay.title} fill sizes="(min-width: 768px) 280px, 165px" />
+          {stay.badge ? <span className="badge">{stay.badge}</span> : null}
+          <button className="heart-btn" type="button" aria-label="Guardar">
+            <HeartIcon />
+          </button>
+        </div>
+        <div className="stay-body">
+          <h3>{stay.title}</h3>
+          <p>{stay.details}</p>
+          <p className="stay-meta">
+            <span>{stay.price}</span>
+            <span className="stay-rating">★ {stay.rating}</span>
+          </p>
+        </div>
+      </article>
+    </Link>
   );
 }
 
@@ -137,45 +246,71 @@ function FooterColumns() {
 }
 
 export function HomeView() {
-  const [navHidden, setNavHidden] = useState(false);
-  const lastScrollY = useRef(0);
+  const [searchState, setSearchState] = useState<SearchState>(() => readSearchStateFromStorage() || defaultSearchState);
+  const [visibleSections, setVisibleSections] = useState(staySections);
+  const router = useRouter();
 
-  useEffect(() => {
-    const onScroll = () => {
-      const currentY = window.scrollY;
-      const delta = currentY - lastScrollY.current;
+  const updateVisibleSections = (query: string) => {
+    const normalizedQuery = query.trim().toLowerCase();
 
-      if (currentY < 12) {
-        setNavHidden(false);
-      } else if (delta > 4) {
-        setNavHidden(true);
-      } else if (delta < -4) {
-        setNavHidden(false);
+    if (!normalizedQuery) {
+      setVisibleSections(staySections);
+      return;
+    }
+
+    const filteredSections = staySections
+      .map((section) => ({
+        ...section,
+        cards: section.cards.filter((stay) => {
+          const searchableText = `${stay.title} ${stay.details} ${stay.price}`.toLowerCase();
+          return searchableText.includes(normalizedQuery);
+        }),
+      }))
+      .filter((section) => section.cards.length > 0);
+
+    setVisibleSections(filteredSections);
+  };
+
+  const handleSearchFieldChange = (field: keyof SearchState, value: string) => {
+    if (field === "destination") {
+      updateVisibleSections(value);
+    }
+
+    setSearchState((currentState) => {
+      if (field === "adults" || field === "children") {
+        const parsedValue = Number(value);
+        const fallbackValue = field === "adults" ? 1 : 0;
+
+        return {
+          ...currentState,
+          [field]: Number.isFinite(parsedValue) ? parsedValue : fallbackValue,
+        };
       }
 
-      lastScrollY.current = currentY;
-    };
+      return {
+        ...currentState,
+        [field]: value,
+      };
+    });
+  };
 
-    lastScrollY.current = window.scrollY;
-    window.addEventListener("scroll", onScroll, { passive: true });
-
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-    };
-  }, []);
+  const handleSearch = () => {
+    const nextSearchState = sanitizeSearchState(searchState);
+    saveSearchStateToStorage(nextSearchState);
+    router.push(`/results?${createSearchQuery(nextSearchState)}`);
+  };
 
   return (
     <div className="airbnb-clone">
       <main>
-        <SearchBar />
-        {staySections.map((section) => (
+        <SearchBar searchState={searchState} onFieldChange={handleSearchFieldChange} onSearch={handleSearch} />
+        {visibleSections.map((section) => (
           <StaySection key={section.title} title={section.title} cards={section.cards} />
         ))}
         <div className="section-break" aria-hidden="true" />
         <InspirationSection />
         <FooterColumns />
       </main>
-      <MobileNav hidden={navHidden} activeTab="explora" />
     </div>
   );
 }

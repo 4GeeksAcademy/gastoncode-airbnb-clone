@@ -1,27 +1,67 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import { HeartIcon, SearchIcon, UserIcon } from "./icons";
+import type { MobileNavProps, MobileNavTab } from "../types/ui";
 
-type MobileNavTab = "explora" | "favoritos" | "sesion";
+function getActiveTab(pathname: string): MobileNavTab {
+  if (pathname.startsWith("/results")) {
+    return "favoritos";
+  }
 
-type MobileNavProps = {
-  hidden?: boolean;
-  activeTab: MobileNavTab;
-};
+  if (pathname.startsWith("/location")) {
+    return "sesion";
+  }
 
-export function MobileNav({ hidden = false, activeTab }: MobileNavProps) {
+  return "explora";
+}
+
+export function MobileNav({ hidden = false }: MobileNavProps) {
+  const pathname = usePathname();
+  const activeTab = getActiveTab(pathname);
+  const [scrollHidden, setScrollHidden] = useState(false);
+  const lastScrollY = useRef(0);
+
+  useEffect(() => {
+    const onScroll = () => {
+      const currentY = window.scrollY;
+      const delta = currentY - lastScrollY.current;
+
+      if (currentY < 12) {
+        setScrollHidden(false);
+      } else if (delta > 4) {
+        setScrollHidden(true);
+      } else if (delta < -4) {
+        setScrollHidden(false);
+      }
+
+      lastScrollY.current = currentY;
+    };
+
+    lastScrollY.current = window.scrollY;
+    window.addEventListener("scroll", onScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+    };
+  }, [pathname]);
+
   return (
-    <nav className={`mobile-nav ${hidden ? "is-hidden" : ""}`} aria-label="Navegacion principal">
-      <button type="button" className={activeTab === "explora" ? "active" : ""} aria-current={activeTab === "explora" ? "page" : undefined}>
+    <nav className={`mobile-nav ${hidden || scrollHidden ? "is-hidden" : ""}`} aria-label="Navegacion principal">
+      <Link href="/" className={activeTab === "explora" ? "active" : ""} aria-current={activeTab === "explora" ? "page" : undefined}>
         <SearchIcon />
         <span>Explora</span>
-      </button>
-      <button type="button" className={activeTab === "favoritos" ? "active" : ""} aria-current={activeTab === "favoritos" ? "page" : undefined}>
+      </Link>
+      <Link href="/results" className={activeTab === "favoritos" ? "active" : ""} aria-current={activeTab === "favoritos" ? "page" : undefined}>
         <HeartIcon />
         <span>Favoritos</span>
-      </button>
-      <button type="button" className={activeTab === "sesion" ? "active" : ""} aria-current={activeTab === "sesion" ? "page" : undefined}>
+      </Link>
+      <Link href="/location" className={activeTab === "sesion" ? "active" : ""} aria-current={activeTab === "sesion" ? "page" : undefined}>
         <UserIcon />
         <span>Iniciar sesion</span>
-      </button>
+      </Link>
     </nav>
   );
 }

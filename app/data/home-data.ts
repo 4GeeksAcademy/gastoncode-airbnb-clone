@@ -158,6 +158,68 @@ export const staySections: StaySection[] = [
       },
     ],
   },
+  {
+    title: "Escapadas destacadas en Jose Ignacio",
+    cards: [
+      {
+        title: "Cabana frente al mar en Jose Ignacio",
+        details: "$U 12.480 UYU por 2 noches",
+        price: "$ 12.480",
+        rating: "4.97",
+        image: "https://picsum.photos/seed/joseignacio-home-1/640/640",
+        badge: "Favorito entre huespedes",
+        accent: "ocean",
+      },
+      {
+        title: "Loft bohemio en Jose Ignacio",
+        details: "$U 8.920 UYU por 2 noches",
+        price: "$ 8.920",
+        rating: "4.89",
+        image: "https://picsum.photos/seed/joseignacio-home-2/640/640",
+        accent: "sunset",
+      },
+      {
+        title: "Casa de diseno en Jose Ignacio",
+        details: "$U 16.730 UYU por 2 noches",
+        price: "$ 16.730",
+        rating: "4.94",
+        image: "https://picsum.photos/seed/joseignacio-home-3/640/640",
+        badge: "Superanfitrion",
+        accent: "wood",
+      },
+    ],
+  },
+  {
+    title: "Alojamientos recomendados en Rocha",
+    cards: [
+      {
+        title: "Casa en La Paloma con parrillero",
+        details: "$U 6.540 UYU por 2 noches",
+        price: "$ 6.540",
+        rating: "4.83",
+        image: "https://picsum.photos/seed/rocha-home-1/640/640",
+        badge: "Favorito entre huespedes",
+        accent: "forest",
+      },
+      {
+        title: "Apartamento en Punta del Diablo",
+        details: "$U 4.990 UYU por 2 noches",
+        price: "$ 4.990",
+        rating: "4.79",
+        image: "https://picsum.photos/seed/rocha-home-2/640/640",
+        accent: "lake",
+      },
+      {
+        title: "Casa en Cabo Polonio",
+        details: "$U 7.210 UYU por 2 noches",
+        price: "$ 7.210",
+        rating: "4.88",
+        image: "https://picsum.photos/seed/rocha-home-3/640/640",
+        badge: "Popular",
+        accent: "wine",
+      },
+    ],
+  },
 ];
 
 export const inspirationLinks: InspirationLink[] = [
