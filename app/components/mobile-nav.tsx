@@ -7,7 +7,7 @@ import { HeartIcon, SearchIcon, UserIcon } from "./icons";
 import type { MobileNavProps, MobileNavTab } from "../types/ui";
 
 function getActiveTab(pathname: string): MobileNavTab {
-  if (pathname.startsWith("/results")) {
+  if (pathname.startsWith("/catalog")) {
     return "favoritos";
   }
 
@@ -54,7 +54,7 @@ export function MobileNav({ hidden = false }: MobileNavProps) {
         <SearchIcon />
         <span>Explora</span>
       </Link>
-      <Link href="/results" className={activeTab === "favoritos" ? "active" : ""} aria-current={activeTab === "favoritos" ? "page" : undefined}>
+      <Link href="/catalog" className={activeTab === "favoritos" ? "active" : ""} aria-current={activeTab === "favoritos" ? "page" : undefined}>
         <HeartIcon />
         <span>Favoritos</span>
       </Link>

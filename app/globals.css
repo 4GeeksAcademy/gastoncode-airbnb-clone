@@ -35,8 +35,31 @@ body {
   margin: 0 auto;
   max-width: 1140px;
   min-height: 100dvh;
-  padding: 0 12px 88px;
+  padding: 42px 12px 88px;
+  position: relative;
   width: 100%;
+}
+
+.app-logo-corner {
+  position: absolute;
+  top: 10px;
+  left: 12px;
+  z-index: 32;
+  color: #4a4a4a;
+  opacity: 0.9;
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.app-global-header {
+  position: relative;
+}
+
+.app-logo-corner img {
+  display: block;
+  width: auto;
+  height: 20px;
 }
 
 .search-shell {
@@ -335,7 +358,7 @@ body {
 
 .stays-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: 1fr;
   gap: 16px 12px;
 }
 
@@ -483,7 +506,7 @@ body {
 .inspiration-grid {
   margin-top: 10px;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: 1fr;
   gap: 12px 14px;
 }
 
@@ -654,7 +677,7 @@ body {
   align-items: start;
 }
 
-.results-home-btn {
+.catalog-home-btn {
   padding: 8px;
   border-radius: 999px;
   border: 1px solid var(--line);
@@ -668,7 +691,7 @@ body {
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
 }
 
-.results-home-btn svg {
+.catalog-home-btn svg {
   width: 18px;
   height: 18px;
   fill: currentColor;
@@ -902,10 +925,6 @@ body {
 
 .result-card {
   border-radius: 16px;
-}
-
-.result-card.is-dimmed {
-  opacity: 0.35;
 }
 
 .result-head {
@@ -1522,7 +1541,7 @@ body {
 .location-review-categories {
   margin-top: 10px;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: 1fr;
   gap: 6px 10px;
 }
 
@@ -1595,7 +1614,7 @@ body {
 .location-nearby div {
   margin-top: 10px;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: 1fr;
   gap: 8px;
 }
 
@@ -1615,7 +1634,16 @@ body {
 
 @media (min-width: 768px) {
   .app-page-shell {
-    padding: 26px 28px 30px;
+    padding: 56px 28px 30px;
+  }
+
+  .app-logo-corner {
+    left: 28px;
+    top: 16px;
+  }
+
+  .app-logo-corner img {
+    height: 22px;
   }
 
   .location-hero {
@@ -1681,6 +1709,10 @@ body {
   }
 
   .location-review-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .location-review-categories {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 

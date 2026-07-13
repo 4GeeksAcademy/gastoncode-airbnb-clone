@@ -501,7 +501,7 @@ function HomeViewContent({ initialSearchState }: { initialSearchState: SearchSta
   const handleSearch = () => {
     const nextSearchState = sanitizeSearchState(searchState);
     saveSearchStateToStorage(nextSearchState);
-    router.push(`/results?${createSearchQuery(nextSearchState)}`);
+    router.push(`/catalog?${createSearchQuery(nextSearchState)}`);
   };
 
   return (

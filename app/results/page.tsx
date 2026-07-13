@@ -1,5 +1,5 @@
-import { ResultsView } from "../components/results-view";
+import { redirect } from "next/navigation";
 
 export default function ResultsPage() {
-  return <ResultsView />;
+  redirect("/catalog");
 }

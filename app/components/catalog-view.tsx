@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, useSyncExternalStore } from "react";
-import { resultStays, resultsHeader, type ResultStay } from "../data/results-data";
+import { resultStays, resultsHeader, type ResultStay } from "../data/catalog-data";
 import { ChevronDownIcon, HeartIcon, HomeIcon, MapPinIcon, SearchIcon, StarIcon } from "./icons";
 import {
   createSearchQuery,
@@ -17,9 +17,9 @@ import {
   sanitizeSearchState,
   type SearchState,
 } from "../data/search-state";
-import type { ResultsCategoryId, ResultsSearchBarProps } from "../types/ui";
+import type { CatalogCategoryId, CatalogSearchBarProps } from "../types/ui";
 
-const resultsCategories: { id: ResultsCategoryId; label: string }[] = [
+const resultsCategories: { id: CatalogCategoryId; label: string }[] = [
   { id: "playa", label: "Playa" },
   { id: "mansiones", label: "Mansiones" },
   { id: "tendencias", label: "Tendencias" },
@@ -157,7 +157,7 @@ function stayMatchesResultFilters(stay: ResultStay, filters: ResultsFilterState)
   return true;
 }
 
-function stayMatchesCategory(stay: ResultStay, category: ResultsCategoryId): boolean {
+function stayMatchesCategory(stay: ResultStay, category: CatalogCategoryId): boolean {
   const searchableText = `${stay.title} ${stay.subtitle} ${stay.details}`.toLowerCase();
   const ratingValue = Number(stay.rating);
 
@@ -184,8 +184,8 @@ function ResultsCategoryRow({
   activeCategory,
   onCategoryChange,
 }: {
-  activeCategory: ResultsCategoryId;
-  onCategoryChange: (categoryId: ResultsCategoryId) => void;
+  activeCategory: CatalogCategoryId;
+  onCategoryChange: (categoryId: CatalogCategoryId) => void;
 }) {
   return (
     <section className="category-row" aria-label="Filtros por categoria">
@@ -211,7 +211,7 @@ function ResultsCategoryRow({
   );
 }
 
-function ResultsSearchBar({ searchState, onFieldChange, onSearch }: ResultsSearchBarProps) {
+function ResultsSearchBar({ searchState, onFieldChange, onSearch }: CatalogSearchBarProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const dateSummary = `${formatCompactSearchDate(searchState.checkIn)} - ${formatCompactSearchDate(searchState.checkOut)}`;
@@ -232,7 +232,7 @@ function ResultsSearchBar({ searchState, onFieldChange, onSearch }: ResultsSearc
   return (
     <section className="search-shell" aria-label="Buscador de resultados">
       <div className="results-search-header">
-        <Link href="/" className="results-home-btn" aria-label="Volver a inicio">
+        <Link href="/" className="catalog-home-btn" aria-label="Volver a inicio">
           <HomeIcon />
         </Link>
 
@@ -421,10 +421,10 @@ function ResultsFilters({
   );
 }
 
-function ResultCard({ stay, dimmed, searchQuery }: { stay: ResultStay; dimmed: boolean; searchQuery: string }) {
+function ResultCard({ stay, searchQuery }: { stay: ResultStay; searchQuery: string }) {
   return (
     <Link href={`/location?${searchQuery}`} className="result-card-link" aria-label={`Ver detalle de ${stay.title}`}>
-      <article className={`result-card ${dimmed ? "is-dimmed" : ""}`}>
+      <article className="result-card">
         <header className="result-head">
           <p className="result-location">{stay.subtitle}</p>
           <p className="result-rating">
@@ -506,14 +506,14 @@ function ResultsListSection({
       {stays.map((stay, index) => (
         <div key={stay.id} className="results-list-slot">
           {index === 3 && similarStays.length > 0 ? <SimilarDatesSection stays={similarStays} searchQuery={searchQuery} /> : null}
-          <ResultCard stay={stay} dimmed={index > 4} searchQuery={searchQuery} />
+          <ResultCard stay={stay} searchQuery={searchQuery} />
         </div>
       ))}
     </>
   );
 }
 
-export function ResultsView() {
+export function CatalogView() {
   const searchParams = useSearchParams();
   const searchState = parseSearchStateFromQuery(searchParams);
   const storedSearchState = useSyncExternalStore(
@@ -528,12 +528,12 @@ export function ResultsView() {
     saveSearchStateToStorage(currentSearch);
   }, [currentSearch, currentSearchQuery]);
 
-  return <ResultsViewContent key={currentSearchQuery} currentSearch={currentSearch} />;
+  return <CatalogViewContent key={currentSearchQuery} currentSearch={currentSearch} />;
 }
 
-function ResultsViewContent({ currentSearch }: { currentSearch: SearchState }) {
+function CatalogViewContent({ currentSearch }: { currentSearch: SearchState }) {
   const router = useRouter();
-  const [activeCategory, setActiveCategory] = useState<ResultsCategoryId>("playa");
+  const [activeCategory, setActiveCategory] = useState<CatalogCategoryId>("playa");
   const [activeFilters, setActiveFilters] = useState<ResultsFilterState>(defaultResultsFilters);
   const [editableSearch, setEditableSearch] = useState(currentSearch);
   const [stays, setStays] = useState<ResultStay[]>([]);
@@ -572,7 +572,7 @@ function ResultsViewContent({ currentSearch }: { currentSearch: SearchState }) {
   const handleSearch = () => {
     const nextSearchState = sanitizeSearchState(editableSearch);
     saveSearchStateToStorage(nextSearchState);
-    router.push(`/results?${createSearchQuery(nextSearchState)}`);
+    router.push(`/catalog?${createSearchQuery(nextSearchState)}`);
   };
 
   const handleFilterChange = <K extends keyof ResultsFilterState>(key: K, value: ResultsFilterState[K]) => {
@@ -591,7 +591,7 @@ function ResultsViewContent({ currentSearch }: { currentSearch: SearchState }) {
   const similarResults = filteredResults.slice(8, 12);
 
   return (
-    <div className="results-view">
+    <div className="catalog-view">
       <main>
         <ResultsSearchBar searchState={editableSearch} onFieldChange={handleSearchFieldChange} onSearch={handleSearch} />
         <ResultsCategoryRow activeCategory={activeCategory} onCategoryChange={setActiveCategory} />

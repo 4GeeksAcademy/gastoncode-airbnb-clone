@@ -21,11 +21,11 @@ import {
   sleepingPlaces,
 } from "../data/location-data";
 
-function HeroGallery({ resultsHref }: { resultsHref: string }) {
+function HeroGallery({ catalogHref }: { catalogHref: string }) {
   return (
     <section className="location-hero" aria-label="Galeria de fotos del alojamiento">
       <div className="location-hero-actions">
-        <Link href={resultsHref} aria-label="Volver" className="hero-circle-btn">
+        <Link href={catalogHref} aria-label="Volver" className="hero-circle-btn">
           ←
         </Link>
         <div className="location-hero-right-actions">
@@ -261,13 +261,13 @@ function FactsSection() {
   );
 }
 
-function NearbyOptionsSection({ resultsHref }: { resultsHref: string }) {
+function NearbyOptionsSection({ catalogHref }: { catalogHref: string }) {
   return (
     <section className="location-nearby" aria-label="Otras opciones en la zona">
       <h2>Descubre otras opciones en Montevideo y sus alrededores</h2>
       <div>
         {nearbyOptions.map((option) => (
-          <Link key={option} href={resultsHref}>
+          <Link key={option} href={catalogHref}>
             {option}
           </Link>
         ))}
@@ -279,12 +279,12 @@ function NearbyOptionsSection({ resultsHref }: { resultsHref: string }) {
 export function LocationView() {
   const searchParams = useSearchParams();
   const searchQuery = searchParams.toString();
-  const resultsHref = searchQuery ? `/results?${searchQuery}` : "/results";
+  const catalogHref = searchQuery ? `/catalog?${searchQuery}` : "/catalog";
 
   return (
     <div className="location-view">
       <main>
-        <HeroGallery resultsHref={resultsHref} />
+        <HeroGallery catalogHref={catalogHref} />
         <LocationHeaderBlock />
         <HostSummary />
         <HighlightsList />
@@ -296,7 +296,7 @@ export function LocationView() {
         <ReviewsSection />
         <HostDetailsSection />
         <FactsSection />
-        <NearbyOptionsSection resultsHref={resultsHref} />
+        <NearbyOptionsSection catalogHref={catalogHref} />
       </main>
     </div>
   );

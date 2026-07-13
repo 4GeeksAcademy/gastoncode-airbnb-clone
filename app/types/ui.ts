@@ -12,6 +12,6 @@ export type MobileNavProps = {
   hidden?: boolean;
 };
 
-export type ResultsSearchBarProps = SearchBarProps;
+export type CatalogSearchBarProps = SearchBarProps;
 
-export type ResultsCategoryId = "playa" | "mansiones" | "tendencias" | "cabanas" | "vinedos";
+export type CatalogCategoryId = "playa" | "mansiones" | "tendencias" | "cabanas" | "vinedos";

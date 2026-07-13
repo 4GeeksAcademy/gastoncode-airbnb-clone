@@ -30,7 +30,7 @@ export const resultStays: ResultStay[] = [
     price: "$ 42.911 UYU por noche",
     total: "$ 214.555 UYU total",
     rating: "4.96",
-    image: "https://picsum.photos/seed/results-home-1/900/700",
+    image: "https://picsum.photos/seed/catalog-home-1/900/700",
     badge: "Favorito entre huespedes",
     favorite: true,
   },
@@ -42,7 +42,7 @@ export const resultStays: ResultStay[] = [
     price: "$ 18.440 UYU por noche",
     total: "$ 92.200 UYU total",
     rating: "4.88",
-    image: "https://picsum.photos/seed/results-home-2/900/700",
+    image: "https://picsum.photos/seed/catalog-home-2/900/700",
   },
   {
     id: "res-3",
@@ -52,7 +52,7 @@ export const resultStays: ResultStay[] = [
     price: "$ 56.780 UYU por noche",
     total: "$ 283.900 UYU total",
     rating: "4.92",
-    image: "https://picsum.photos/seed/results-home-3/900/700",
+    image: "https://picsum.photos/seed/catalog-home-3/900/700",
     badge: "Favorito entre huespedes",
   },
   {
@@ -63,7 +63,7 @@ export const resultStays: ResultStay[] = [
     price: "$ 15.720 UYU por noche",
     total: "$ 78.600 UYU total",
     rating: "4.74",
-    image: "https://picsum.photos/seed/results-home-4/900/700",
+    image: "https://picsum.photos/seed/catalog-home-4/900/700",
   },
   {
     id: "res-5",
@@ -73,7 +73,7 @@ export const resultStays: ResultStay[] = [
     price: "$ 34.600 UYU por noche",
     total: "$ 173.000 UYU total",
     rating: "4.91",
-    image: "https://picsum.photos/seed/results-home-5/900/700",
+    image: "https://picsum.photos/seed/catalog-home-5/900/700",
     badge: "Superanfitrion",
   },
   {
@@ -84,7 +84,7 @@ export const resultStays: ResultStay[] = [
     price: "$ 13.200 UYU por noche",
     total: "$ 66.000 UYU total",
     rating: "4.69",
-    image: "https://picsum.photos/seed/results-home-6/900/700",
+    image: "https://picsum.photos/seed/catalog-home-6/900/700",
   },
   {
     id: "res-7",
@@ -94,7 +94,7 @@ export const resultStays: ResultStay[] = [
     price: "$ 21.500 UYU por noche",
     total: "$ 107.500 UYU total",
     rating: "4.81",
-    image: "https://picsum.photos/seed/results-home-7/900/700",
+    image: "https://picsum.photos/seed/catalog-home-7/900/700",
   },
   {
     id: "res-8",
@@ -104,7 +104,7 @@ export const resultStays: ResultStay[] = [
     price: "$ 38.900 UYU por noche",
     total: "$ 194.500 UYU total",
     rating: "4.95",
-    image: "https://picsum.photos/seed/results-home-8/900/700",
+    image: "https://picsum.photos/seed/catalog-home-8/900/700",
     badge: "Favorito entre huespedes",
   },
   {
@@ -115,7 +115,7 @@ export const resultStays: ResultStay[] = [
     price: "$ 14.300 UYU por noche",
     total: "$ 71.500 UYU total",
     rating: "4.62",
-    image: "https://picsum.photos/seed/results-home-9/900/700",
+    image: "https://picsum.photos/seed/catalog-home-9/900/700",
   },
   {
     id: "res-10",
@@ -125,7 +125,7 @@ export const resultStays: ResultStay[] = [
     price: "$ 64.800 UYU por noche",
     total: "$ 324.000 UYU total",
     rating: "4.99",
-    image: "https://picsum.photos/seed/results-home-10/900/700",
+    image: "https://picsum.photos/seed/catalog-home-10/900/700",
     badge: "Favorito entre huespedes",
     favorite: true,
   },
@@ -137,7 +137,7 @@ export const resultStays: ResultStay[] = [
     price: "$ 19.700 UYU por noche",
     total: "$ 98.500 UYU total",
     rating: "4.84",
-    image: "https://picsum.photos/seed/results-home-11/900/700",
+    image: "https://picsum.photos/seed/catalog-home-11/900/700",
   },
   {
     id: "res-12",
@@ -147,7 +147,7 @@ export const resultStays: ResultStay[] = [
     price: "$ 29.900 UYU por noche",
     total: "$ 149.500 UYU total",
     rating: "4.87",
-    image: "https://picsum.photos/seed/results-home-12/900/700",
+    image: "https://picsum.photos/seed/catalog-home-12/900/700",
     badge: "Favorito entre huespedes",
   },
   {
@@ -158,7 +158,7 @@ export const resultStays: ResultStay[] = [
     price: "$ 31.400 UYU por noche",
     total: "$ 157.000 UYU total",
     rating: "4.90",
-    image: "https://picsum.photos/seed/results-home-13/900/700",
+    image: "https://picsum.photos/seed/catalog-home-13/900/700",
     badge: "Favorito entre huespedes",
   },
   {
@@ -169,7 +169,7 @@ export const resultStays: ResultStay[] = [
     price: "$ 17.800 UYU por noche",
     total: "$ 89.000 UYU total",
     rating: "4.77",
-    image: "https://picsum.photos/seed/results-home-14/900/700",
+    image: "https://picsum.photos/seed/catalog-home-14/900/700",
   },
   {
     id: "res-15",
@@ -179,7 +179,7 @@ export const resultStays: ResultStay[] = [
     price: "$ 49.200 UYU por noche",
     total: "$ 246.000 UYU total",
     rating: "4.93",
-    image: "https://picsum.photos/seed/results-home-15/900/700",
+    image: "https://picsum.photos/seed/catalog-home-15/900/700",
     badge: "Superanfitrion",
     favorite: true,
   },
@@ -191,7 +191,7 @@ export const resultStays: ResultStay[] = [
     price: "$ 24.500 UYU por noche",
     total: "$ 122.500 UYU total",
     rating: "4.85",
-    image: "https://picsum.photos/seed/results-home-16/900/700",
+    image: "https://picsum.photos/seed/catalog-home-16/900/700",
   },
   {
     id: "res-17",
@@ -201,7 +201,7 @@ export const resultStays: ResultStay[] = [
     price: "$ 58.300 UYU por noche",
     total: "$ 291.500 UYU total",
     rating: "4.98",
-    image: "https://picsum.photos/seed/results-home-17/900/700",
+    image: "https://picsum.photos/seed/catalog-home-17/900/700",
     badge: "Favorito entre huespedes",
   },
   {
@@ -212,7 +212,7 @@ export const resultStays: ResultStay[] = [
     price: "$ 12.900 UYU por noche",
     total: "$ 64.500 UYU total",
     rating: "4.66",
-    image: "https://picsum.photos/seed/results-home-18/900/700",
+    image: "https://picsum.photos/seed/catalog-home-18/900/700",
   },
   {
     id: "res-19",
@@ -222,7 +222,7 @@ export const resultStays: ResultStay[] = [
     price: "$ 27.300 UYU por noche",
     total: "$ 136.500 UYU total",
     rating: "4.82",
-    image: "https://picsum.photos/seed/results-home-19/900/700",
+    image: "https://picsum.photos/seed/catalog-home-19/900/700",
   },
   {
     id: "res-20",
@@ -232,7 +232,7 @@ export const resultStays: ResultStay[] = [
     price: "$ 61.500 UYU por noche",
     total: "$ 307.500 UYU total",
     rating: "4.97",
-    image: "https://picsum.photos/seed/results-home-20/900/700",
+    image: "https://picsum.photos/seed/catalog-home-20/900/700",
     badge: "Favorito entre huespedes",
   },
 ];
