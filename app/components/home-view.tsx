@@ -161,6 +161,187 @@ function getVisibleStays(stays: Stay[], query: string, activeFilters: HomeFilter
     });
 }
 
+function HomeSearchToggleButton({
+  isExpanded,
+  destination,
+  dateSummary,
+  guestSummary,
+  onToggle,
+}: {
+  isExpanded: boolean;
+  destination: string;
+  dateSummary: string;
+  guestSummary: string;
+  onToggle: () => void;
+}) {
+  return (
+    <button
+      className={`search-chip search-chip-toggle ${isExpanded ? "is-expanded" : ""}`}
+      type="button"
+      onClick={onToggle}
+      aria-expanded={isExpanded}
+    >
+      <SearchIcon />
+      <span className="search-chip-copy">
+        <strong>{destination}</strong>
+        <small>{dateSummary} · {guestSummary}</small>
+      </span>
+      <span className="search-chip-caret" aria-hidden="true">{isExpanded ? "▴" : "▾"}</span>
+    </button>
+  );
+}
+
+function HomeSearchDatesRow({
+  searchState,
+  onFieldChange,
+}: {
+  searchState: SearchState;
+  onFieldChange: SearchBarProps["onFieldChange"];
+}) {
+  return (
+    <div className="search-dates-row">
+      <label className="search-field">
+        <span>Llegada</span>
+        <input
+          type="date"
+          value={searchState.checkIn}
+          onChange={(event) => onFieldChange("checkIn", event.target.value)}
+        />
+      </label>
+      <label className="search-field">
+        <span>Salida</span>
+        <input
+          type="date"
+          value={searchState.checkOut}
+          onChange={(event) => onFieldChange("checkOut", event.target.value)}
+        />
+      </label>
+    </div>
+  );
+}
+
+function HomeGuestStepper({
+  label,
+  detail,
+  value,
+  onDecrease,
+  onIncrease,
+}: {
+  label: string;
+  detail: string;
+  value: number;
+  onDecrease: () => void;
+  onIncrease: () => void;
+}) {
+  const normalizedLabel = label.toLowerCase();
+
+  return (
+    <div className="guest-stepper">
+      <div>
+        <strong>{label}</strong>
+        <small>{detail}</small>
+      </div>
+      <div className="guest-stepper-actions">
+        <button type="button" onClick={onDecrease} aria-label={`Restar ${normalizedLabel}`}>-</button>
+        <span>{value}</span>
+        <button type="button" onClick={onIncrease} aria-label={`Sumar ${normalizedLabel}`}>+</button>
+      </div>
+    </div>
+  );
+}
+
+function HomeSearchGuestsRow({
+  adults,
+  childrenCount,
+  onGuestCountChange,
+}: {
+  adults: number;
+  childrenCount: number;
+  onGuestCountChange: (field: "adults" | "children", delta: number) => void;
+}) {
+  return (
+    <div className="search-guests-row" aria-label="Cantidad de personas">
+      <HomeGuestStepper
+        label="Adultos"
+        detail="Mayores de 13 anos"
+        value={adults}
+        onDecrease={() => onGuestCountChange("adults", -1)}
+        onIncrease={() => onGuestCountChange("adults", 1)}
+      />
+      <HomeGuestStepper
+        label="Ninos"
+        detail="De 0 a 12 anos"
+        value={childrenCount}
+        onDecrease={() => onGuestCountChange("children", -1)}
+        onIncrease={() => onGuestCountChange("children", 1)}
+      />
+    </div>
+  );
+}
+
+function HomeSearchPanel({
+  searchState,
+  onFieldChange,
+  onGuestCountChange,
+  onClose,
+  onSearch,
+}: {
+  searchState: SearchState;
+  onFieldChange: SearchBarProps["onFieldChange"];
+  onGuestCountChange: (field: "adults" | "children", delta: number) => void;
+  onClose: () => void;
+  onSearch: () => void;
+}) {
+  return (
+    <div className="search-panel">
+      <label className="search-field">
+        <span>Destino</span>
+        <input
+          type="text"
+          value={searchState.destination}
+          onChange={(event) => onFieldChange("destination", event.target.value)}
+          placeholder="Ingresa un destino"
+        />
+      </label>
+      <HomeSearchDatesRow searchState={searchState} onFieldChange={onFieldChange} />
+      <HomeSearchGuestsRow
+        adults={searchState.adults}
+        childrenCount={searchState.children}
+        onGuestCountChange={onGuestCountChange}
+      />
+      <div className="search-panel-actions">
+        <button type="button" className="search-clear-btn" onClick={onClose}>
+          Cerrar
+        </button>
+        <button type="button" className="search-submit-btn" onClick={onSearch}>
+          Buscar
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function HomeCategoryRow() {
+  return (
+    <div className="category-row" aria-label="Filtros por categoria">
+      {categoryFilters.map((filter, index) => (
+        <button
+          key={filter}
+          className={`category-pill ${index === 1 ? "is-active" : ""}`}
+          type="button"
+        >
+          <span className="category-icon" aria-hidden="true">
+            {index === 0 ? <SparkleIcon /> : null}
+            {index === 1 ? <HomeIcon /> : null}
+            {index === 2 ? <MapPinIcon /> : null}
+          </span>
+          {filter}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 function SearchBar({ searchState, onFieldChange, onSearch }: SearchBarProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -182,104 +363,25 @@ function SearchBar({ searchState, onFieldChange, onSearch }: SearchBarProps) {
   return (
     <section className="search-shell" aria-label="Buscador principal">
       <div className="search-form" role="search" aria-label="Busqueda de alojamientos">
-        <button
-          className={`search-chip search-chip-toggle ${isExpanded ? "is-expanded" : ""}`}
-          type="button"
-          onClick={() => setIsExpanded((current) => !current)}
-          aria-expanded={isExpanded}
-        >
-          <SearchIcon />
-          <span className="search-chip-copy">
-            <strong>{searchState.destination}</strong>
-            <small>{dateSummary} · {guestSummary}</small>
-          </span>
-          <span className="search-chip-caret" aria-hidden="true">{isExpanded ? "▴" : "▾"}</span>
-        </button>
+        <HomeSearchToggleButton
+          isExpanded={isExpanded}
+          destination={searchState.destination}
+          dateSummary={dateSummary}
+          guestSummary={guestSummary}
+          onToggle={() => setIsExpanded((current) => !current)}
+        />
 
         {isExpanded ? (
-          <div className="search-panel">
-            <label className="search-field">
-              <span>Destino</span>
-              <input
-                type="text"
-                value={searchState.destination}
-                onChange={(event) => onFieldChange("destination", event.target.value)}
-                placeholder="Ingresa un destino"
-              />
-            </label>
-
-            <div className="search-dates-row">
-              <label className="search-field">
-                <span>Llegada</span>
-                <input
-                  type="date"
-                  value={searchState.checkIn}
-                  onChange={(event) => onFieldChange("checkIn", event.target.value)}
-                />
-              </label>
-              <label className="search-field">
-                <span>Salida</span>
-                <input
-                  type="date"
-                  value={searchState.checkOut}
-                  onChange={(event) => onFieldChange("checkOut", event.target.value)}
-                />
-              </label>
-            </div>
-
-            <div className="search-guests-row" aria-label="Cantidad de personas">
-              <div className="guest-stepper">
-                <div>
-                  <strong>Adultos</strong>
-                  <small>Mayores de 13 anos</small>
-                </div>
-                <div className="guest-stepper-actions">
-                  <button type="button" onClick={() => updateGuestCount("adults", -1)} aria-label="Restar adulto">-</button>
-                  <span>{searchState.adults}</span>
-                  <button type="button" onClick={() => updateGuestCount("adults", 1)} aria-label="Sumar adulto">+</button>
-                </div>
-              </div>
-
-              <div className="guest-stepper">
-                <div>
-                  <strong>Ninos</strong>
-                  <small>De 0 a 12 anos</small>
-                </div>
-                <div className="guest-stepper-actions">
-                  <button type="button" onClick={() => updateGuestCount("children", -1)} aria-label="Restar nino">-</button>
-                  <span>{searchState.children}</span>
-                  <button type="button" onClick={() => updateGuestCount("children", 1)} aria-label="Sumar nino">+</button>
-                </div>
-              </div>
-            </div>
-
-            <div className="search-panel-actions">
-              <button type="button" className="search-clear-btn" onClick={() => setIsExpanded(false)}>
-                Cerrar
-              </button>
-              <button type="button" className="search-submit-btn" onClick={handleSearchClick}>
-                Buscar
-              </button>
-            </div>
-          </div>
+          <HomeSearchPanel
+            searchState={searchState}
+            onFieldChange={onFieldChange}
+            onGuestCountChange={updateGuestCount}
+            onClose={() => setIsExpanded(false)}
+            onSearch={handleSearchClick}
+          />
         ) : null}
       </div>
-      <div className="category-row" aria-label="Filtros por categoria">
-        {categoryFilters.map((filter, index) => (
-          <button
-            key={filter}
-            className={`category-pill ${index === 1 ? "is-active" : ""}`}
-            type="button"
-          >
-            <span className="category-icon" aria-hidden="true">
-              {index === 0 ? <SparkleIcon /> : null}
-              {index === 1 ? <HomeIcon /> : null}
-              {index === 2 ? <MapPinIcon /> : null}
-            </span>
-            {filter}
-          </button>
-        ))}
-      </div>
+      <HomeCategoryRow />
     </section>
   );
 }
