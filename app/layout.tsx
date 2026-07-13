@@ -34,7 +34,7 @@ export default function RootLayout({
         <div className="app-page-shell">
           <header className="app-global-header" aria-label="Cabecera del sitio">
             <Link href="/" aria-label="Ir al inicio" className="app-logo-corner">
-              <Image src="/logo-staynest.svg" alt="StayNest" width={88} height={22} priority />
+              <Image src="/logo-staynest.svg" alt="StayNest" width={118} height={28} priority />
             </Link>
           </header>
           {children}

@@ -35,31 +35,33 @@ body {
   margin: 0 auto;
   max-width: 1140px;
   min-height: 100dvh;
-  padding: 42px 12px 88px;
+  padding: 14px 12px 88px;
   position: relative;
   width: 100%;
 }
 
 .app-logo-corner {
   position: absolute;
-  top: 10px;
-  left: 12px;
+  top: 0;
+  left: 0;
   z-index: 32;
   color: #4a4a4a;
   opacity: 0.9;
   display: inline-flex;
   align-items: center;
   text-decoration: none;
+  max-width: calc(100% - 24px);
 }
 
 .app-global-header {
   position: relative;
+  min-height: 28px;
 }
 
 .app-logo-corner img {
   display: block;
   width: auto;
-  height: 20px;
+  height: 24px;
 }
 
 .search-shell {
@@ -905,6 +907,36 @@ body {
   color: #5f5f5f;
 }
 
+.results-header {
+  margin-top: 12px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.results-header-copy {
+  min-width: 0;
+}
+
+.results-header-eyebrow {
+  margin: 0;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #8a8a8a;
+}
+
+.results-header .results-summary {
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.results-sort-control {
+  flex-shrink: 0;
+}
+
 .results-list {
   display: grid;
   gap: 14px;
@@ -1190,6 +1222,11 @@ body {
   margin: 0 -12px;
 }
 
+.location-hero-gallery-shell {
+  display: grid;
+  gap: 10px;
+}
+
 .location-hero-actions {
   position: absolute;
   z-index: 3;
@@ -1225,25 +1262,88 @@ body {
   fill: #ffffff;
 }
 
-.location-hero-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 6px;
-}
-
-.location-hero-item {
+.location-hero-stage {
   position: relative;
   overflow: hidden;
-  border-radius: 0;
-  aspect-ratio: 1 / 1;
-}
-
-.location-hero-item.is-main {
-  grid-column: 1 / -1;
+  margin: 0;
   aspect-ratio: 1.18 / 1;
+  background: linear-gradient(135deg, #d8d8d8, #f1f1f1);
+  border-radius: 20px 20px 0 0;
 }
 
-.location-hero-item img,
+.location-hero-caption {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 14px;
+  z-index: 2;
+  border-radius: 16px;
+  background: rgba(20, 20, 20, 0.48);
+  color: #ffffff;
+  padding: 10px 12px;
+}
+
+.location-hero-caption span {
+  display: block;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.location-hero-caption p {
+  margin: 4px 0 0;
+  font-size: 0.78rem;
+}
+
+.location-hero-gallery-controls {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0 12px;
+}
+
+.location-gallery-btn {
+  flex: 1;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #ffffff;
+  color: #222222;
+  padding: 10px 14px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+.location-hero-thumbnails {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  padding: 0 12px;
+}
+
+.location-hero-thumb {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 14px;
+  background: #ffffff;
+  padding: 0;
+  overflow: hidden;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.06);
+}
+
+.location-hero-thumb.is-active {
+  border-color: #111111;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.14);
+}
+
+.location-hero-thumb-image {
+  position: relative;
+  display: block;
+  aspect-ratio: 1.2 / 1;
+}
+
+.location-hero-stage img,
+.location-hero-thumb-image img,
 .location-map-wrap img,
 .location-sleep-image img {
   width: 100%;
@@ -1252,6 +1352,7 @@ body {
 }
 
 .location-head,
+.location-reservation-card,
 .location-host-summary,
 .location-highlights,
 .location-description,
@@ -1280,11 +1381,41 @@ body {
   color: #555555;
 }
 
-.location-head-rating {
+.location-head-meta {
   margin-top: 6px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.location-head-meta .location-head-line,
+.location-head-meta .location-head-rating,
+.location-head-reviews {
+  margin: 0;
+}
+
+.location-head-meta .location-head-line::after,
+.location-head-rating::after {
+  content: "·";
+  margin-left: 6px;
+  color: #7a7a7a;
+}
+
+.location-head-details {
+  margin-top: 6px;
+}
+
+.location-head-rating {
   display: inline-flex;
   align-items: center;
   gap: 4px;
+  font-size: 0.73rem;
+  color: #202020;
+  font-weight: 700;
+}
+
+.location-head-reviews {
   font-size: 0.73rem;
   color: #202020;
   font-weight: 700;
@@ -1295,6 +1426,91 @@ body {
   width: 14px;
   height: 14px;
   fill: #202020;
+}
+
+.location-reservation-card {
+  display: grid;
+  gap: 14px;
+}
+
+.location-reservation-price-block {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.location-reservation-price {
+  margin: 0;
+  font-size: 1.28rem;
+  font-weight: 800;
+  color: #111111;
+}
+
+.location-reservation-price-copy {
+  font-size: 0.78rem;
+  color: #666666;
+}
+
+.location-reservation-guests {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 14px;
+  border: 1px solid #e5e5e5;
+  border-radius: 16px;
+  background: #fbfbfb;
+}
+
+.location-reservation-guests-label {
+  margin: 0;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #181818;
+}
+
+.location-reservation-guests-copy {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.7rem;
+  color: #6b6b6b;
+}
+
+.location-reservation-stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.location-reservation-stepper button {
+  width: 32px;
+  height: 32px;
+  border: 1px solid #d7d7d7;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #1f1f1f;
+  font-size: 1rem;
+}
+
+.location-reservation-stepper button:disabled {
+  opacity: 0.45;
+}
+
+.location-reservation-stepper span {
+  min-width: 18px;
+  text-align: center;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.location-reservation-cta {
+  min-height: 44px;
+  border: 0;
+  border-radius: 999px;
+  background: #111111;
+  color: #ffffff;
+  font-size: 0.82rem;
+  font-weight: 800;
 }
 
 .location-host-summary {
@@ -1411,25 +1627,55 @@ body {
   list-style: none;
   padding: 0;
   display: grid;
-  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
 }
 
 .location-amenities li {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto 1fr;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  min-height: 58px;
+  padding: 10px 12px;
+  border: 1px solid #e6e6e6;
+  border-radius: 14px;
+  background: #ffffff;
   font-size: 0.74rem;
 }
 
-.location-amenities li span:first-child {
+.location-amenity-icon {
   display: inline-flex;
-  width: 16px;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  background: #f6f6f6;
   color: #2f2f2f;
-  font-weight: 700;
+}
+
+.location-amenity-icon svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+}
+
+.location-amenity-label {
+  line-height: 1.35;
 }
 
 .location-amenities li.is-missing {
   color: #888888;
+  background: #fafafa;
+}
+
+.location-amenities li.is-missing .location-amenity-icon {
+  background: #f0f0f0;
+  color: #9a9a9a;
+}
+
+.location-amenities li.is-missing .location-amenity-label {
   text-decoration: line-through;
 }
 
@@ -1634,40 +1880,39 @@ body {
 
 @media (min-width: 768px) {
   .app-page-shell {
-    padding: 56px 28px 30px;
-  }
-
-  .app-logo-corner {
-    left: 28px;
-    top: 16px;
+    padding: 24px 28px 30px;
   }
 
   .app-logo-corner img {
-    height: 22px;
+    height: 26px;
   }
 
-  .location-hero {
-    margin: 0;
+  .app-global-header {
+    min-height: 30px;
   }
 
-  .location-hero-grid {
-    grid-template-columns: 2fr 1fr;
-    grid-template-rows: repeat(2, minmax(0, 1fr));
-    gap: 8px;
-    border-radius: 18px;
-    overflow: hidden;
-  }
-
-  .location-hero-item {
-    border-radius: 0;
+  .location-hero-stage {
+    border-radius: 22px;
+    height: 43.333vh;
+    min-height: 0;
     aspect-ratio: auto;
-    min-height: 180px;
   }
 
-  .location-hero-item.is-main {
-    grid-column: 1 / 2;
-    grid-row: 1 / 3;
-    min-height: 430px;
+  .location-hero-gallery-shell {
+    width: min(66.666vw, 100%);
+    gap: 12px;
+  }
+
+  .location-hero-gallery-controls {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .location-hero-thumbnails {
+    grid-template-columns: repeat(3, 92px);
+    justify-content: end;
+    padding-left: 0;
+    padding-right: 0;
   }
 
   .location-head h1 {
@@ -1676,6 +1921,7 @@ body {
 
   .location-head-line,
   .location-head-rating,
+  .location-reservation-price-copy,
   .location-host-summary p,
   .location-highlights p,
   .location-description p,
@@ -1688,6 +1934,10 @@ body {
     font-size: 0.82rem;
   }
 
+  .location-amenities ul {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
   .location-host-summary h2,
   .location-sleep h2,
   .location-amenities h2,
@@ -1697,6 +1947,10 @@ body {
   .location-facts h2,
   .location-nearby h2 {
     font-size: 1.26rem;
+  }
+
+  .location-reservation-card {
+    max-width: 420px;
   }
 
   .location-sleep-card {
@@ -1761,6 +2015,12 @@ body {
   }
 
   .results-summary {
+    max-width: 720px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .results-header {
     max-width: 720px;
     margin-left: auto;
     margin-right: auto;

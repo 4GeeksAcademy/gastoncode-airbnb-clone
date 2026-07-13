@@ -31,6 +31,7 @@ type PriceFilterValue = "all" | "lte-20000" | "between-20001-40000" | "gt-40000"
 type PlaceTypeFilterValue = "all" | "apartamento-entero" | "casa-entera" | "habitacion-privada";
 type RatingFilterValue = "all" | "gte-4.5" | "gte-4.8" | "gte-4.9";
 type RoomsFilterValue = "all" | "gte-1" | "gte-2" | "gte-3";
+type PriceSortOrder = "asc" | "desc";
 
 type ResultsFilterState = {
   price: PriceFilterValue;
@@ -72,6 +73,11 @@ const roomsFilterOptions: { value: RoomsFilterValue; label: string }[] = [
   { value: "gte-1", label: "1+ habitaciones" },
   { value: "gte-2", label: "2+ habitaciones" },
   { value: "gte-3", label: "3+ habitaciones" },
+];
+
+const priceSortOptions: { value: PriceSortOrder; label: string }[] = [
+  { value: "asc", label: "Precio: menor a mayor" },
+  { value: "desc", label: "Precio: mayor a menor" },
 ];
 
 function parsePricePerNight(price: string): number {
@@ -422,8 +428,10 @@ function ResultsFilters({
 }
 
 function ResultCard({ stay, searchQuery }: { stay: ResultStay; searchQuery: string }) {
+  const locationHref = `/location?id=${stay.id}${searchQuery ? `&${searchQuery}` : ""}`;
+
   return (
-    <Link href={`/location?${searchQuery}`} className="result-card-link" aria-label={`Ver detalle de ${stay.title}`}>
+    <Link href={locationHref} className="result-card-link" aria-label={`Ver detalle de ${stay.title}`}>
       <article className="result-card">
         <header className="result-head">
           <p className="result-location">{stay.subtitle}</p>
@@ -459,7 +467,7 @@ function SimilarDatesSection({ stays, searchQuery }: { stays: ResultStay[]; sear
       </header>
       <div className="similar-dates-scroll">
         {stays.map((stay) => (
-          <Link key={`similar-${stay.id}`} href={`/location?${searchQuery}`} className="similar-card-link" aria-label={`Ver detalle de ${stay.title}`}>
+          <Link key={`similar-${stay.id}`} href={`/location?id=${stay.id}${searchQuery ? `&${searchQuery}` : ""}`} className="similar-card-link" aria-label={`Ver detalle de ${stay.title}`}>
             <article className="similar-card">
               <div className="similar-image-wrap">
                 <Image src={stay.image} alt={stay.title} fill sizes="200px" />
@@ -479,7 +487,42 @@ function ResultsSummary({ isLoading, total }: { isLoading: boolean; total: numbe
     return <p className="results-summary" role="status" aria-live="polite">Cargando alojamientos...</p>;
   }
 
-  return <p className="results-summary">{total} alojamientos en esta categoria</p>;
+  return <p className="results-summary">{total} resultados encontrados</p>;
+}
+
+function ResultsHeader({
+  isLoading,
+  total,
+  sortOrder,
+  onSortOrderChange,
+}: {
+  isLoading: boolean;
+  total: number;
+  sortOrder: PriceSortOrder;
+  onSortOrderChange: (value: PriceSortOrder) => void;
+}) {
+  return (
+    <section className="results-header" aria-label="Resumen y orden de resultados">
+      <div className="results-header-copy">
+        <p className="results-header-eyebrow">Resultados</p>
+        <ResultsSummary isLoading={isLoading} total={total} />
+      </div>
+
+      <label className="results-chip results-chip-select results-sort-control" aria-label="Ordenar resultados por precio">
+        <span>Ordenar</span>
+        <select
+          value={sortOrder}
+          onChange={(event) => onSortOrderChange(event.target.value as PriceSortOrder)}
+          disabled={isLoading}
+        >
+          {priceSortOptions.map((option) => (
+            <option key={option.value} value={option.value}>{option.label}</option>
+          ))}
+        </select>
+        <ChevronDownIcon />
+      </label>
+    </section>
+  );
 }
 
 function ResultsListSection({
@@ -535,6 +578,7 @@ function CatalogViewContent({ currentSearch }: { currentSearch: SearchState }) {
   const router = useRouter();
   const [activeCategory, setActiveCategory] = useState<CatalogCategoryId>("playa");
   const [activeFilters, setActiveFilters] = useState<ResultsFilterState>(defaultResultsFilters);
+  const [sortOrder, setSortOrder] = useState<PriceSortOrder>("asc");
   const [editableSearch, setEditableSearch] = useState(currentSearch);
   const [stays, setStays] = useState<ResultStay[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -587,8 +631,14 @@ function CatalogViewContent({ currentSearch }: { currentSearch: SearchState }) {
   const filteredResults = stays.filter((stay) => (
     stayMatchesCategory(stay, activeCategory) && stayMatchesResultFilters(stay, activeFilters)
   ));
-  const mainResults = filteredResults.slice(0, 8);
-  const similarResults = filteredResults.slice(8, 12);
+  const sortedResults = [...filteredResults].sort((leftStay, rightStay) => {
+    const leftPrice = parsePricePerNight(leftStay.price);
+    const rightPrice = parsePricePerNight(rightStay.price);
+
+    return sortOrder === "asc" ? leftPrice - rightPrice : rightPrice - leftPrice;
+  });
+  const mainResults = sortedResults.slice(0, 8);
+  const similarResults = sortedResults.slice(8, 12);
 
   return (
     <div className="catalog-view">
@@ -599,7 +649,12 @@ function CatalogViewContent({ currentSearch }: { currentSearch: SearchState }) {
         <ResultsSegment />
         <ResultsFilters filters={activeFilters} onFilterChange={handleFilterChange} />
         <ResultsMapPanel />
-        <ResultsSummary isLoading={isLoading} total={filteredResults.length} />
+        <ResultsHeader
+          isLoading={isLoading}
+          total={sortedResults.length}
+          sortOrder={sortOrder}
+          onSortOrderChange={setSortOrder}
+        />
         <div className="results-main-layout">
           <section className="results-list" aria-label="Resultados de alojamientos">
             <ResultsListSection

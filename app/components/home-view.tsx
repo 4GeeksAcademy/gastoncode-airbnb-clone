@@ -138,6 +138,15 @@ function formatNightlyPrice(stay: Stay) {
   return `${stay.price} / noche`;
 }
 
+function createLocationIdFromTitle(title: string) {
+  return title
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 function getVisibleStays(stays: Stay[], query: string, activeFilters: HomeFilterState) {
   const normalizedQuery = query.trim().toLowerCase();
 
@@ -341,7 +350,7 @@ function HomeResultsFilters({
 
 function StayCard({ stay }: { stay: Stay }) {
   return (
-    <Link href="/location" className="stay-card-link" aria-label={`Ver detalle de ${stay.title}`}>
+    <Link href={`/location?id=${createLocationIdFromTitle(stay.title)}`} className="stay-card-link" aria-label={`Ver detalle de ${stay.title}`}>
       <article className="stay-card">
         <div className={`stay-image tone-${stay.accent}`}>
           <div className="stay-image-placeholder" aria-hidden="true">Foto</div>
