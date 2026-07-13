@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, useSyncExternalStore } from "react";
-import { filterChips, resultStays, resultsHeader, type ResultStay } from "../data/results-data";
+import { resultStays, resultsHeader, type ResultStay } from "../data/results-data";
 import { ChevronDownIcon, HeartIcon, HomeIcon, MapPinIcon, SearchIcon, StarIcon } from "./icons";
 import {
   createSearchQuery,
@@ -26,6 +26,136 @@ const resultsCategories: { id: ResultsCategoryId; label: string }[] = [
   { id: "cabanas", label: "Cabanas" },
   { id: "vinedos", label: "Vinedos" },
 ];
+
+type PriceFilterValue = "all" | "lte-20000" | "between-20001-40000" | "gt-40000";
+type PlaceTypeFilterValue = "all" | "apartamento-entero" | "casa-entera" | "habitacion-privada";
+type RatingFilterValue = "all" | "gte-4.5" | "gte-4.8" | "gte-4.9";
+type RoomsFilterValue = "all" | "gte-1" | "gte-2" | "gte-3";
+
+type ResultsFilterState = {
+  price: PriceFilterValue;
+  placeType: PlaceTypeFilterValue;
+  rating: RatingFilterValue;
+  rooms: RoomsFilterValue;
+};
+
+const defaultResultsFilters: ResultsFilterState = {
+  price: "all",
+  placeType: "all",
+  rating: "all",
+  rooms: "all",
+};
+
+const priceFilterOptions: { value: PriceFilterValue; label: string }[] = [
+  { value: "all", label: "Cualquier precio" },
+  { value: "lte-20000", label: "Hasta $20.000" },
+  { value: "between-20001-40000", label: "$20.001 a $40.000" },
+  { value: "gt-40000", label: "Mas de $40.000" },
+];
+
+const placeTypeFilterOptions: { value: PlaceTypeFilterValue; label: string }[] = [
+  { value: "all", label: "Cualquier tipo" },
+  { value: "apartamento-entero", label: "Apartamento entero" },
+  { value: "casa-entera", label: "Casa entera" },
+  { value: "habitacion-privada", label: "Habitacion privada" },
+];
+
+const ratingFilterOptions: { value: RatingFilterValue; label: string }[] = [
+  { value: "all", label: "Cualquier calificacion" },
+  { value: "gte-4.5", label: "4.5 o mas" },
+  { value: "gte-4.8", label: "4.8 o mas" },
+  { value: "gte-4.9", label: "4.9 o mas" },
+];
+
+const roomsFilterOptions: { value: RoomsFilterValue; label: string }[] = [
+  { value: "all", label: "Cualquier cantidad" },
+  { value: "gte-1", label: "1+ habitaciones" },
+  { value: "gte-2", label: "2+ habitaciones" },
+  { value: "gte-3", label: "3+ habitaciones" },
+];
+
+function parsePricePerNight(price: string): number {
+  const numericValue = Number(price.replace(/[^0-9]/g, ""));
+  return Number.isFinite(numericValue) ? numericValue : 0;
+}
+
+function getStayRoomCount(details: string): number {
+  const normalizedDetails = details.toLowerCase();
+
+  const roomMatch = normalizedDetails.match(/(\d+)\s+habitaciones?/);
+  if (roomMatch) {
+    return Number(roomMatch[1]);
+  }
+
+  const bedsMatch = normalizedDetails.match(/(\d+)\s+camas?/);
+  if (bedsMatch) {
+    return Number(bedsMatch[1]);
+  }
+
+  const bedMatch = normalizedDetails.match(/(\d+)\s+cama\b/);
+  if (bedMatch) {
+    return Number(bedMatch[1]);
+  }
+
+  return 0;
+}
+
+function stayMatchesResultFilters(stay: ResultStay, filters: ResultsFilterState): boolean {
+  const pricePerNight = parsePricePerNight(stay.price);
+  const subtitle = stay.subtitle.toLowerCase();
+  const rating = Number(stay.rating);
+  const rooms = getStayRoomCount(stay.details);
+
+  if (filters.price === "lte-20000" && pricePerNight > 20000) {
+    return false;
+  }
+
+  if (filters.price === "between-20001-40000" && (pricePerNight < 20001 || pricePerNight > 40000)) {
+    return false;
+  }
+
+  if (filters.price === "gt-40000" && pricePerNight <= 40000) {
+    return false;
+  }
+
+  if (filters.placeType === "apartamento-entero" && !subtitle.includes("apartamento entero")) {
+    return false;
+  }
+
+  if (filters.placeType === "casa-entera" && !subtitle.includes("casa entera")) {
+    return false;
+  }
+
+  if (filters.placeType === "habitacion-privada" && !subtitle.includes("habitacion privada")) {
+    return false;
+  }
+
+  if (filters.rating === "gte-4.5" && rating < 4.5) {
+    return false;
+  }
+
+  if (filters.rating === "gte-4.8" && rating < 4.8) {
+    return false;
+  }
+
+  if (filters.rating === "gte-4.9" && rating < 4.9) {
+    return false;
+  }
+
+  if (filters.rooms === "gte-1" && rooms < 1) {
+    return false;
+  }
+
+  if (filters.rooms === "gte-2" && rooms < 2) {
+    return false;
+  }
+
+  if (filters.rooms === "gte-3" && rooms < 3) {
+    return false;
+  }
+
+  return true;
+}
 
 function stayMatchesCategory(stay: ResultStay, category: ResultsCategoryId): boolean {
   const searchableText = `${stay.title} ${stay.subtitle} ${stay.details}`.toLowerCase();
@@ -227,15 +357,66 @@ function ResultsSegment() {
   );
 }
 
-function ResultsFilters() {
+function ResultsFilters({
+  filters,
+  onFilterChange,
+}: {
+  filters: ResultsFilterState;
+  onFilterChange: <K extends keyof ResultsFilterState>(key: K, value: ResultsFilterState[K]) => void;
+}) {
   return (
     <section className="results-filters" aria-label="Filtros rapidos">
-      {filterChips.map((chip) => (
-        <button key={chip} type="button" className="results-chip">
-          <span>{chip}</span>
-          <ChevronDownIcon />
-        </button>
-      ))}
+      <label className="results-chip results-chip-select" aria-label="Filtrar por precio">
+        <span>Precio</span>
+        <select
+          value={filters.price}
+          onChange={(event) => onFilterChange("price", event.target.value as PriceFilterValue)}
+        >
+          {priceFilterOptions.map((option) => (
+            <option key={option.value} value={option.value}>{option.label}</option>
+          ))}
+        </select>
+        <ChevronDownIcon />
+      </label>
+
+      <label className="results-chip results-chip-select" aria-label="Filtrar por tipo de lugar">
+        <span>Tipo de lugar</span>
+        <select
+          value={filters.placeType}
+          onChange={(event) => onFilterChange("placeType", event.target.value as PlaceTypeFilterValue)}
+        >
+          {placeTypeFilterOptions.map((option) => (
+            <option key={option.value} value={option.value}>{option.label}</option>
+          ))}
+        </select>
+        <ChevronDownIcon />
+      </label>
+
+      <label className="results-chip results-chip-select" aria-label="Filtrar por calificacion">
+        <span>Calificacion</span>
+        <select
+          value={filters.rating}
+          onChange={(event) => onFilterChange("rating", event.target.value as RatingFilterValue)}
+        >
+          {ratingFilterOptions.map((option) => (
+            <option key={option.value} value={option.value}>{option.label}</option>
+          ))}
+        </select>
+        <ChevronDownIcon />
+      </label>
+
+      <label className="results-chip results-chip-select" aria-label="Filtrar por habitaciones">
+        <span>Habitaciones</span>
+        <select
+          value={filters.rooms}
+          onChange={(event) => onFilterChange("rooms", event.target.value as RoomsFilterValue)}
+        >
+          {roomsFilterOptions.map((option) => (
+            <option key={option.value} value={option.value}>{option.label}</option>
+          ))}
+        </select>
+        <ChevronDownIcon />
+      </label>
     </section>
   );
 }
@@ -293,6 +474,45 @@ function SimilarDatesSection({ stays, searchQuery }: { stays: ResultStay[]; sear
   );
 }
 
+function ResultsSummary({ isLoading, total }: { isLoading: boolean; total: number }) {
+  if (isLoading) {
+    return <p className="results-summary" role="status" aria-live="polite">Cargando alojamientos...</p>;
+  }
+
+  return <p className="results-summary">{total} alojamientos en esta categoria</p>;
+}
+
+function ResultsListSection({
+  isLoading,
+  stays,
+  similarStays,
+  searchQuery,
+}: {
+  isLoading: boolean;
+  stays: ResultStay[];
+  similarStays: ResultStay[];
+  searchQuery: string;
+}) {
+  if (isLoading) {
+    return <p className="results-summary" role="status" aria-live="polite">Cargando datos...</p>;
+  }
+
+  if (stays.length === 0) {
+    return <p className="results-summary">No hay resultados para esta categoria.</p>;
+  }
+
+  return (
+    <>
+      {stays.map((stay, index) => (
+        <div key={stay.id} className="results-list-slot">
+          {index === 3 && similarStays.length > 0 ? <SimilarDatesSection stays={similarStays} searchQuery={searchQuery} /> : null}
+          <ResultCard stay={stay} dimmed={index > 4} searchQuery={searchQuery} />
+        </div>
+      ))}
+    </>
+  );
+}
+
 export function ResultsView() {
   const searchParams = useSearchParams();
   const searchState = parseSearchStateFromQuery(searchParams);
@@ -314,13 +534,12 @@ export function ResultsView() {
 function ResultsViewContent({ currentSearch }: { currentSearch: SearchState }) {
   const router = useRouter();
   const [activeCategory, setActiveCategory] = useState<ResultsCategoryId>("playa");
+  const [activeFilters, setActiveFilters] = useState<ResultsFilterState>(defaultResultsFilters);
   const [editableSearch, setEditableSearch] = useState(currentSearch);
   const [stays, setStays] = useState<ResultStay[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    setIsLoading(true);
-
     const timeoutId = window.setTimeout(() => {
       setStays(resultStays);
       setIsLoading(false);
@@ -356,9 +575,18 @@ function ResultsViewContent({ currentSearch }: { currentSearch: SearchState }) {
     router.push(`/results?${createSearchQuery(nextSearchState)}`);
   };
 
+  const handleFilterChange = <K extends keyof ResultsFilterState>(key: K, value: ResultsFilterState[K]) => {
+    setActiveFilters((currentFilters) => ({
+      ...currentFilters,
+      [key]: value,
+    }));
+  };
+
   const searchQuery = createSearchQuery(currentSearch);
 
-  const filteredResults = stays.filter((stay) => stayMatchesCategory(stay, activeCategory));
+  const filteredResults = stays.filter((stay) => (
+    stayMatchesCategory(stay, activeCategory) && stayMatchesResultFilters(stay, activeFilters)
+  ));
   const mainResults = filteredResults.slice(0, 8);
   const similarResults = filteredResults.slice(8, 12);
 
@@ -369,25 +597,17 @@ function ResultsViewContent({ currentSearch }: { currentSearch: SearchState }) {
         <ResultsCategoryRow activeCategory={activeCategory} onCategoryChange={setActiveCategory} />
         <ResultsMapCta />
         <ResultsSegment />
-        <ResultsFilters />
+        <ResultsFilters filters={activeFilters} onFilterChange={handleFilterChange} />
         <ResultsMapPanel />
-        {isLoading ? (
-          <p className="results-summary" role="status" aria-live="polite">Cargando alojamientos...</p>
-        ) : (
-          <p className="results-summary">{filteredResults.length} alojamientos en esta categoria</p>
-        )}
+        <ResultsSummary isLoading={isLoading} total={filteredResults.length} />
         <div className="results-main-layout">
           <section className="results-list" aria-label="Resultados de alojamientos">
-            {isLoading ? (
-              <p className="results-summary" role="status" aria-live="polite">Cargando datos...</p>
-            ) : mainResults.length > 0 ? mainResults.map((stay, index) => (
-              <div key={stay.id} className="results-list-slot">
-                {index === 3 && similarResults.length > 0 ? <SimilarDatesSection stays={similarResults} searchQuery={searchQuery} /> : null}
-                <ResultCard stay={stay} dimmed={index > 4} searchQuery={searchQuery} />
-              </div>
-            )) : (
-              <p className="results-summary">No hay resultados para esta categoria.</p>
-            )}
+            <ResultsListSection
+              isLoading={isLoading}
+              stays={mainResults}
+              similarStays={similarResults}
+              searchQuery={searchQuery}
+            />
           </section>
           <aside className="results-desktop-map" aria-hidden="true">
             <ResultsMapPanel desktop />

@@ -12,9 +12,9 @@ export type ResultStay = {
 };
 
 export const resultsHeader = {
-  location: "Cerca de Buenos Aires",
-  dates: "17-22 de nov",
-  guests: "2 huespedes",
+  location: "",
+  dates: "",
+  guests: "",
   mapLabel: "Mostrar mapa",
   segmentLabel: "Alojamientos",
 };

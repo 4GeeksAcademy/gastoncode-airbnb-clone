@@ -12,7 +12,6 @@ import {
   staySections,
   type Stay,
 } from "../data/home-data";
-import { filterChips } from "../data/results-data";
 import {
   createSearchQuery,
   defaultSearchState,
@@ -25,32 +24,107 @@ import {
 } from "../data/search-state";
 import type { SearchBarProps } from "../types/ui";
 
-const HOME_PLACE_TYPE_PATTERN = /apartamento|casa|loft|cabana|minicasa|alojamiento|huespedes/;
 const HOME_ROOM_PATTERN = /casa|cabana|alojamiento/;
 const HOME_STAY_PATTERN = /noche|noches/;
+
+type HomePriceFilterValue = "all" | "lte-5000" | "between-5001-10000" | "gt-10000";
+type HomePlaceTypeFilterValue = "all" | "apartamento" | "casa" | "loft-cabana" | "experiencia";
+type HomeRatingFilterValue = "all" | "gte-4.7" | "gte-4.9";
+type HomeRoomsFilterValue = "all" | "espacio-completo" | "hospedaje";
+
+type HomeFilterState = {
+  price: HomePriceFilterValue;
+  placeType: HomePlaceTypeFilterValue;
+  rating: HomeRatingFilterValue;
+  rooms: HomeRoomsFilterValue;
+};
+
+const defaultHomeFilters: HomeFilterState = {
+  price: "all",
+  placeType: "all",
+  rating: "all",
+  rooms: "all",
+};
+
+const homePriceOptions: { value: HomePriceFilterValue; label: string }[] = [
+  { value: "all", label: "Cualquier precio" },
+  { value: "lte-5000", label: "Hasta $5.000" },
+  { value: "between-5001-10000", label: "$5.001 a $10.000" },
+  { value: "gt-10000", label: "Mas de $10.000" },
+];
+
+const homePlaceTypeOptions: { value: HomePlaceTypeFilterValue; label: string }[] = [
+  { value: "all", label: "Cualquier tipo" },
+  { value: "apartamento", label: "Apartamento" },
+  { value: "casa", label: "Casa" },
+  { value: "loft-cabana", label: "Loft/Cabana" },
+  { value: "experiencia", label: "Experiencia" },
+];
+
+const homeRatingOptions: { value: HomeRatingFilterValue; label: string }[] = [
+  { value: "all", label: "Cualquier calificacion" },
+  { value: "gte-4.7", label: "4.7 o mas" },
+  { value: "gte-4.9", label: "4.9 o mas" },
+];
+
+const homeRoomsOptions: { value: HomeRoomsFilterValue; label: string }[] = [
+  { value: "all", label: "Cualquier opcion" },
+  { value: "espacio-completo", label: "Espacio completo" },
+  { value: "hospedaje", label: "Hospedaje/Experiencia" },
+];
 
 function extractPriceValue(price: string) {
   const numericValue = Number(price.replace(/[^\d]/g, ""));
   return Number.isFinite(numericValue) && numericValue > 0 ? numericValue : Number.POSITIVE_INFINITY;
 }
 
-function matchesHomeFilter(stay: Stay, filter: string) {
+function stayMatchesHomeFilters(stay: Stay, filters: HomeFilterState) {
   const searchableText = `${stay.title} ${stay.details}`.toLowerCase();
+  const priceValue = extractPriceValue(stay.price);
+  const rating = Number(stay.rating);
 
-  if (filter === "Precio") {
-    return extractPriceValue(stay.price) <= 5000;
+  if (filters.price === "lte-5000" && priceValue > 5000) {
+    return false;
   }
 
-  if (filter === "Tipo de lugar") {
-    return HOME_PLACE_TYPE_PATTERN.test(searchableText);
+  if (filters.price === "between-5001-10000" && (priceValue < 5001 || priceValue > 10000)) {
+    return false;
   }
 
-  if (filter === "Calificacion") {
-    return Number(stay.rating) >= 4.9;
+  if (filters.price === "gt-10000" && priceValue <= 10000) {
+    return false;
   }
 
-  if (filter === "Habitaciones") {
-    return HOME_ROOM_PATTERN.test(searchableText);
+  if (filters.placeType === "apartamento" && !searchableText.includes("apartamento")) {
+    return false;
+  }
+
+  if (filters.placeType === "casa" && !searchableText.includes("casa")) {
+    return false;
+  }
+
+  if (filters.placeType === "loft-cabana" && !/loft|cabana|minicasa/.test(searchableText)) {
+    return false;
+  }
+
+  if (filters.placeType === "experiencia" && !searchableText.includes("participante")) {
+    return false;
+  }
+
+  if (filters.rating === "gte-4.7" && rating < 4.7) {
+    return false;
+  }
+
+  if (filters.rating === "gte-4.9" && rating < 4.9) {
+    return false;
+  }
+
+  if (filters.rooms === "espacio-completo" && !HOME_ROOM_PATTERN.test(searchableText)) {
+    return false;
+  }
+
+  if (filters.rooms === "hospedaje" && !/huespedes|participante/.test(searchableText)) {
+    return false;
   }
 
   return true;
@@ -64,7 +138,7 @@ function formatNightlyPrice(stay: Stay) {
   return `${stay.price} / noche`;
 }
 
-function getVisibleStays(stays: Stay[], query: string, activeFilters: string[]) {
+function getVisibleStays(stays: Stay[], query: string, activeFilters: HomeFilterState) {
   const normalizedQuery = query.trim().toLowerCase();
 
   return stays
@@ -72,7 +146,7 @@ function getVisibleStays(stays: Stay[], query: string, activeFilters: string[]) 
     .filter((stay) => {
       const searchableText = `${stay.title} ${stay.details} ${stay.price}`.toLowerCase();
       const matchesQuery = !normalizedQuery || searchableText.includes(normalizedQuery);
-      const matchesFilters = activeFilters.every((filter) => matchesHomeFilter(stay, filter));
+      const matchesFilters = stayMatchesHomeFilters(stay, activeFilters);
 
       return matchesQuery && matchesFilters;
     });
@@ -202,26 +276,65 @@ function SearchBar({ searchState, onFieldChange, onSearch }: SearchBarProps) {
 }
 
 function HomeResultsFilters({
-  activeFilters,
-  onToggleFilter,
+  filters,
+  onFilterChange,
 }: {
-  activeFilters: string[];
-  onToggleFilter: (filter: string) => void;
+  filters: HomeFilterState;
+  onFilterChange: <K extends keyof HomeFilterState>(key: K, value: HomeFilterState[K]) => void;
 }) {
   return (
     <section className="results-filters" aria-label="Filtros de alojamientos">
-      {filterChips.map((chip) => (
-        <button
-          key={chip}
-          type="button"
-          className={`results-chip ${activeFilters.includes(chip) ? "is-active" : ""}`}
-          onClick={() => onToggleFilter(chip)}
-          aria-pressed={activeFilters.includes(chip)}
+      <label className="results-chip results-chip-select" aria-label="Filtrar por precio">
+        <span>Precio</span>
+        <select
+          value={filters.price}
+          onChange={(event) => onFilterChange("price", event.target.value as HomePriceFilterValue)}
         >
-          <span>{chip}</span>
-          <ChevronDownIcon />
-        </button>
-      ))}
+          {homePriceOptions.map((option) => (
+            <option key={option.value} value={option.value}>{option.label}</option>
+          ))}
+        </select>
+        <ChevronDownIcon />
+      </label>
+
+      <label className="results-chip results-chip-select" aria-label="Filtrar por tipo de lugar">
+        <span>Tipo de lugar</span>
+        <select
+          value={filters.placeType}
+          onChange={(event) => onFilterChange("placeType", event.target.value as HomePlaceTypeFilterValue)}
+        >
+          {homePlaceTypeOptions.map((option) => (
+            <option key={option.value} value={option.value}>{option.label}</option>
+          ))}
+        </select>
+        <ChevronDownIcon />
+      </label>
+
+      <label className="results-chip results-chip-select" aria-label="Filtrar por calificacion">
+        <span>Calificacion</span>
+        <select
+          value={filters.rating}
+          onChange={(event) => onFilterChange("rating", event.target.value as HomeRatingFilterValue)}
+        >
+          {homeRatingOptions.map((option) => (
+            <option key={option.value} value={option.value}>{option.label}</option>
+          ))}
+        </select>
+        <ChevronDownIcon />
+      </label>
+
+      <label className="results-chip results-chip-select" aria-label="Filtrar por habitaciones">
+        <span>Habitaciones</span>
+        <select
+          value={filters.rooms}
+          onChange={(event) => onFilterChange("rooms", event.target.value as HomeRoomsFilterValue)}
+        >
+          {homeRoomsOptions.map((option) => (
+            <option key={option.value} value={option.value}>{option.label}</option>
+          ))}
+        </select>
+        <ChevronDownIcon />
+      </label>
     </section>
   );
 }
@@ -318,6 +431,18 @@ function FooterColumns() {
   );
 }
 
+function HomeStaysSection({ isLoading, stays }: { isLoading: boolean; stays: Stay[] }) {
+  if (isLoading) {
+    return <p className="results-summary" role="status" aria-live="polite">Cargando alojamientos...</p>;
+  }
+
+  if (stays.length === 0) {
+    return <p className="results-summary">No hay alojamientos que coincidan con los filtros seleccionados.</p>;
+  }
+
+  return <StaysGrid stays={stays} />;
+}
+
 export function HomeView() {
   const initialSearchState = useSyncExternalStore(
     subscribeToSearchState,
@@ -330,15 +455,13 @@ export function HomeView() {
 
 function HomeViewContent({ initialSearchState }: { initialSearchState: SearchState }) {
   const [searchState, setSearchState] = useState<SearchState>(initialSearchState);
-  const [activeFilters, setActiveFilters] = useState<string[]>([]);
+  const [activeFilters, setActiveFilters] = useState<HomeFilterState>(defaultHomeFilters);
   const [stays, setStays] = useState<Stay[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   const visibleStays = getVisibleStays(stays, searchState.destination, activeFilters);
 
   useEffect(() => {
-    setIsLoading(true);
-
     const timeoutId = window.setTimeout(() => {
       setStays(staySections.flatMap((section) => section.cards));
       setIsLoading(false);
@@ -368,12 +491,11 @@ function HomeViewContent({ initialSearchState }: { initialSearchState: SearchSta
     });
   };
 
-  const handleToggleFilter = (filter: string) => {
-    setActiveFilters((currentFilters) => (
-      currentFilters.includes(filter)
-        ? currentFilters.filter((currentFilter) => currentFilter !== filter)
-        : [...currentFilters, filter]
-    ));
+  const handleFilterChange = <K extends keyof HomeFilterState>(key: K, value: HomeFilterState[K]) => {
+    setActiveFilters((currentFilters) => ({
+      ...currentFilters,
+      [key]: value,
+    }));
   };
 
   const handleSearch = () => {
@@ -386,12 +508,8 @@ function HomeViewContent({ initialSearchState }: { initialSearchState: SearchSta
     <div className="airbnb-clone">
       <main>
         <SearchBar searchState={searchState} onFieldChange={handleSearchFieldChange} onSearch={handleSearch} />
-        <HomeResultsFilters activeFilters={activeFilters} onToggleFilter={handleToggleFilter} />
-        {isLoading ? (
-          <p className="results-summary" role="status" aria-live="polite">Cargando alojamientos...</p>
-        ) : visibleStays.length > 0 ? <StaysGrid stays={visibleStays} /> : (
-          <p className="results-summary">No hay alojamientos que coincidan con los filtros seleccionados.</p>
-        )}
+        <HomeResultsFilters filters={activeFilters} onFilterChange={handleFilterChange} />
+        <HomeStaysSection isLoading={isLoading} stays={visibleStays} />
         <div className="section-break" aria-hidden="true" />
         <InspirationSection />
         <FooterColumns />

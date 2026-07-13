@@ -760,6 +760,39 @@ body {
   fill: #666666;
 }
 
+.results-chip-select {
+  position: relative;
+  gap: 6px;
+  padding-right: 28px;
+}
+
+.results-chip-select select {
+  border: 0;
+  background: transparent;
+  color: #343434;
+  font-size: 0.7rem;
+  font-weight: 600;
+  outline: none;
+  padding-right: 14px;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: none;
+  cursor: pointer;
+  max-width: 132px;
+  text-overflow: ellipsis;
+}
+
+.results-chip-select select::-ms-expand {
+  display: none;
+}
+
+.results-chip-select svg {
+  position: absolute;
+  right: 10px;
+  pointer-events: none;
+}
+
 .results-chip.is-active svg {
   fill: #ffffff;
 }

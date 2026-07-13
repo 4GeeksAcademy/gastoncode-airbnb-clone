@@ -10,10 +10,10 @@ export const SEARCH_STATE_STORAGE_KEY = "airbnb-clone-search-state";
 const SEARCH_STATE_CHANGE_EVENT = "airbnb-clone-search-state-change";
 
 export const defaultSearchState: SearchState = {
-  destination: "Cerca de Buenos Aires",
-  checkIn: "2026-11-17",
-  checkOut: "2026-11-22",
-  adults: 2,
+  destination: "",
+  checkIn: "",
+  checkOut: "",
+  adults: 1,
   children: 0,
 };
 
@@ -182,6 +182,17 @@ export function saveSearchStateToStorage(searchState: SearchState): void {
   }
 
   const nextRawState = JSON.stringify(searchState);
+
+  // Avoid dispatching store-change events when the payload did not change.
+  if (nextRawState === cachedSearchStateRaw) {
+    return;
+  }
+
+  if (window.localStorage.getItem(SEARCH_STATE_STORAGE_KEY) === nextRawState) {
+    cachedSearchStateRaw = nextRawState;
+    cachedSearchStateSnapshot = searchState;
+    return;
+  }
 
   window.localStorage.setItem(SEARCH_STATE_STORAGE_KEY, nextRawState);
   cachedSearchStateRaw = nextRawState;
